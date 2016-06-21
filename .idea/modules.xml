@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GoPro_Gateway.iml" filepath="$PROJECT_DIR$/GoPro_Gateway.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gopro_gateway/ffmpegWritingMinds.iml" filepath="$PROJECT_DIR$/gopro_gateway/ffmpegWritingMinds.iml" />
+    </modules>
+  </component>
+</project>
