@@ -31,8 +31,11 @@ public class UDPService extends IntentService {
             DatagramSocket socket = new DatagramSocket();
             while(true) {
                 socket.send(packet);
+                Thread.sleep(1500);
             }
         } catch(IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
