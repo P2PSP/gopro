@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">GoPro Gateway</string>
+
+    <string name="btn_next">Proceed</string>
+
+    <string name="text_connect_to_gopro">Connect to GoPro HERO 4 device</string>
+    <string name="btn_setup_gopro">Set your GoPro HERO 4 device to WiFi mode and then connect to it.</string>
+
+    <string name="text_permissions_req">To proceed, please grant all required permissions.</string>
+    <string name="btn_permissions_req">Grant permissions</string>
+
+    <string name="btn_start_stream">Start stream</string>
+    <string name="btn_stop_stream">Stop stream</string>
 </resources>

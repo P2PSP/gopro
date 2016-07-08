@@ -1,4 +1,4 @@
-package com.biryanistudio.goprogateway;
+package com.biryanistudio.goprogateway.Fragment;
 
 import android.app.Fragment;
 import android.content.Intent;
@@ -8,8 +8,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import com.biryanistudio.goprogateway.R;
+import com.biryanistudio.goprogateway.UDPService;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
 import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
@@ -17,9 +20,6 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunnin
 import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,73 +30,82 @@ import okhttp3.Response;
  */
 public class GoProFragment extends Fragment implements View.OnClickListener {
     final private String TAG = getClass().getSimpleName();
-    private TextView textView;
-    private FFmpeg ffmpeg;
+    final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart";
+    private TextView mTextLog;
+    private Button mButtonStart;
+    private Button mButtonStop;
+    private FFmpeg mFfmpeg;
+    private Intent mUDPIntent;
 
-    // final private String[] cmd = {"-codec:v:0", "h264", "-codec:a:1", "aac", "-i", "udp://:8554", "/storage/emulated/0/output.mp4"};
-
-    // Added -f mpegts flags, as seen below
-    final private String[] cmd = {"-codec:v:0", "h264", "-codec:a:1", "aac", "-f", "mpegts", "-i", "udp://:8554", "/storage/emulated/0/output.mp4"};
-
-    // Works without codec specifiers too
-    // final private String[] cmd = {"-i", "udp://:8554", "/storage/emulated/0/output.mp4"};
+    final private String[] cmd = {"-i", "udp://:8554", "-codec:v:0", "copy", "-codec:a:1", "copy", "-preset", "veryfast", "/storage/emulated/0/output.mp4"};
 
     @Override
     public void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mUDPIntent = new Intent(getActivity(), UDPService.class);
         loadFFMPEG();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gopro, container, false);
-        textView = (TextView) view.findViewById(R.id.log);
-        (view.findViewById(R.id.start)).setOnClickListener(this);
-        (view.findViewById(R.id.udp)).setOnClickListener(this);
-        (view.findViewById(R.id.stop)).setOnClickListener(this);
+        mTextLog = (TextView) view.findViewById(R.id.tv_log);
+        mButtonStart = (Button) view.findViewById(R.id.btn_start);
+        mButtonStart.setOnClickListener(this);
+        mButtonStop = (Button) view.findViewById(R.id.btn_stop);
+        mButtonStop.setOnClickListener(this);
         return view;
     }
 
     @Override
     public void onClick(View view) {
-        if(view.getId() == R.id.start) start();
-        else if(view.getId() == R.id.udp) new UDPTask().execute();
-        else stop();
+        if(view.getId() == R.id.btn_start) {
+            start();
+            mButtonStart.setEnabled(false);
+            mButtonStop.setEnabled(true);
+        }
+        else {
+            killFfmpeg();
+            mButtonStart.setEnabled(true);
+            mButtonStop.setEnabled(false);
+        }
     }
 
     private void start() {
+        new RequestStreamTask().execute();
+    }
+
+    private void startFfmpeg() {
         try {
-            new RequestStreamTask().execute();
-            getActivity().startService(new Intent(getActivity(), UDPService.class));
-            ffmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
+            mFfmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "ffmpeg execute onStart");
-                    textView.append("\nffmpeg execute onStart");
+                    mTextLog.append("\nffmpeg execute onStart");
                 }
 
                 @Override
                 public void onProgress(String message) {
                     Log.i(TAG, message);
-                    textView.append("\n" + message);
+                    mTextLog.append("\n" + message);
                 }
 
                 @Override
                 public void onFailure(String message) {
                     Log.i(TAG, message);
-                    textView.append("\n" + message);
+                    mTextLog.append("\n" + message);
                 }
 
                 @Override
                 public void onSuccess(String message) {
                     Log.i(TAG, message);
-                    textView.append("\n" + message);
+                    mTextLog.append("\n" + message);
                 }
 
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "ffmpeg execute onFinish");
-                    textView.append("\nffmpeg execute onFinish");
+                    mTextLog.append("\nffmpeg execute onFinish");
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -104,38 +113,39 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    private void stop() {
-        ffmpeg.killRunningProcesses();
+    private void killFfmpeg() {
+        mFfmpeg.killRunningProcesses();
+        getActivity().stopService(mUDPIntent);
         Log.i(TAG, "ffmpeg killRunningProcesses");
-        textView.append("\nffmpeg killRunningProcesses");
+        mTextLog.append("\nffmpeg killRunningProcesses");
     }
 
     private void loadFFMPEG() {
-        ffmpeg = FFmpeg.getInstance(getActivity());
+        mFfmpeg = FFmpeg.getInstance(getActivity());
         try {
-            ffmpeg.loadBinary(new LoadBinaryResponseHandler() {
+            mFfmpeg.loadBinary(new LoadBinaryResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "ffmpeg loadBinary onStart");
-                    textView.append("\nffmpeg loadBinary onStart");
+                    mTextLog.append("\nffmpeg loadBinary onStart");
                 }
 
                 @Override
                 public void onFailure() {
                     Log.i(TAG, "ffmpeg loadBinary onFailure");
-                    textView.append("\nffmpeg loadBinary onFailure");
+                    mTextLog.append("\nffmpeg loadBinary onFailure");
                 }
 
                 @Override
                 public void onSuccess() {
                     Log.i(TAG, "ffmpeg loadBinary onSuccess");
-                    textView.append("\nffmpeg loadBinary onSuccess");
+                    mTextLog.append("\nffmpeg loadBinary onSuccess");
                 }
 
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "ffmpeg loadBinary onFinish");
-                    textView.append("\nffmpeg loadBinary onFinish");
+                    mTextLog.append("\nffmpeg loadBinary onFinish");
                 }
             });
         } catch (FFmpegNotSupportedException e) {
@@ -147,9 +157,8 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         @Override
         protected String doInBackground(Void... voids) {
             try {
-                String url = "http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart";
                 OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder().url(url).build();
+                Request request = new Request.Builder().url(GOPRO_STREAM_URL).build();
                 Response response = client.newCall(request).execute();
                 return response.body().string();
             } catch (IOException e) {
@@ -160,26 +169,13 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
 
         @Override
         protected void onPostExecute (String result) {
-            textView.append("\n"+result);
-        }
-    }
-
-    private class UDPTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... voids) {
-            try {
-                String UDP_IP = "10.5.5.9";
-                int UDP_PORT = 8554;
-                byte[] message = "_GPHD_:0:0:2:0.000000".getBytes();
-                InetAddress address = InetAddress.getByName(UDP_IP);
-                DatagramPacket packet = new DatagramPacket(message, message.length, address, UDP_PORT);
-                DatagramSocket socket = new DatagramSocket();
-                socket.send(packet);
-                socket.close();
-            } catch(IOException e) {
-                e.printStackTrace();
+            mTextLog.append("\n"+result);
+            if(result.equalsIgnoreCase("null")) {
+                mTextLog.append("\n Please try again");
+            } else {
+                getActivity().startService(mUDPIntent);
+                startFfmpeg();
             }
-            return null;
         }
     }
 }

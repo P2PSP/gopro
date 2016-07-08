@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.security.NetworkSecurityPolicy;
 import android.support.v7.app.AppCompatActivity;
 
+import com.biryanistudio.goprogateway.Fragment.WifiFragment;
+
 public class MainActivity extends AppCompatActivity {
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -16,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
         getFragmentManager().beginTransaction().replace(R.id.container, new WifiFragment()).commit();
 
         // See README for documentation on this issue
-        NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
     }
 }
