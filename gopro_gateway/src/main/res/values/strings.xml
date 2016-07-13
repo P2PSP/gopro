@@ -10,5 +10,7 @@
     <string name="btn_permissions_req">Grant permissions</string>
 
     <string name="btn_start_stream">Start stream</string>
+    <string name="btn_start_upload">Start upload</string>
+    <string name="btn_stop_upload">Stop upload</string>
     <string name="btn_stop_stream">Stop stream</string>
 </resources>

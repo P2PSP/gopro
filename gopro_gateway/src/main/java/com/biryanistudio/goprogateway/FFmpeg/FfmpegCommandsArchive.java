@@ -1,4 +1,4 @@
-package com.biryanistudio.goprogateway;
+package com.biryanistudio.goprogateway.FFmpeg;
 
 /**
  * Created by Sravan on 08-Jul-16.

@@ -3,7 +3,6 @@ package com.biryanistudio.goprogateway;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
-import android.security.NetworkSecurityPolicy;
 import android.support.v7.app.AppCompatActivity;
 
 import com.biryanistudio.goprogateway.Fragment.WifiFragment;
@@ -18,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
         getFragmentManager().beginTransaction().replace(R.id.container, new WifiFragment()).commit();
 
         // See README for documentation on this issue
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-            NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+        // if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            // NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
     }
 }
