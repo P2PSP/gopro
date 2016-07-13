@@ -1,4 +1,4 @@
-package com.biryanistudio.goprogateway.Services;
+package com.biryanistudio.goprogateway.FFmpeg;
 
 import android.app.Notification;
 import android.app.Service;
@@ -6,14 +6,13 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.biryanistudio.goprogateway.FFmpeg.FFmpegUploader;
 import com.biryanistudio.goprogateway.R;
 
 /**
  * Created by Sravan on 12-Jul-16.
  */
-public class FFmpegUploadService extends Service {
-    private FFmpegUploader mFFmpegUploader;
+public class FFmpegStreamService extends Service {
+    private FFmpegStreamer mFFmpegStreamer;
 
     @Nullable
     @Override
@@ -23,12 +22,11 @@ public class FFmpegUploadService extends Service {
 
     @Override
     public void onCreate() {
-        Notification notif = new Notification.Builder(this).setContentTitle("Upload")
+        Notification notif = new Notification.Builder(this).setContentTitle("Stream")
                 .setSmallIcon(R.mipmap.ic_launcher).build();
-        startForeground(2, notif);
+        startForeground(1, notif);
 
-        mFFmpegUploader = new FFmpegUploader(this);
-        // mFFmpegUploader.start();
+        mFFmpegStreamer = new FFmpegStreamer(this);
     }
 
     @Override
@@ -38,7 +36,7 @@ public class FFmpegUploadService extends Service {
 
     @Override
     public void onDestroy() {
-        mFFmpegUploader.kill();
+        mFFmpegStreamer.kill();
         stopForeground(true);
     }
 }

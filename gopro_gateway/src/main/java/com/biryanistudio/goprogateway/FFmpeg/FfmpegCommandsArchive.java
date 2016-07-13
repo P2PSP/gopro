@@ -13,5 +13,7 @@ public class FfmpegCommandsArchive {
     4. final private String[] cmd = {"-i", "udp://:8554", "-preset", "veryfast", "/storage/emulated/0/output.mp4"};
     5. Works without codec specifiers too
     final private String[] cmd = {"-i", "udp://:8554", "/storage/emulated/0/output.mp4"};
+    6.private String[] cmd = {"-i", "udp://:8554?localport="+mLocalPort, "-codec:v:0", "copy", "-codec:a:1", "libmp3lame",
+        "-f", "mpegts", "/storage/emulated/0/output.ts"};
      */
 }
