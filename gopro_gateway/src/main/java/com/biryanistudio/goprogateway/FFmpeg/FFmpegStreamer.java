@@ -39,7 +39,7 @@ public class FFmpegStreamer {
     private Network mWifiNetwork;
     final private Intent mUDPIntent;
 
-    final private String YOUTUBE_KEY = "x5v1-uqey-h9qf-1fa3";
+    final private String YOUTUBE_KEY = "";
     private String[] cmd = {"-i", "udp://10.5.5.9:8554", "-codec:v:0", "copy", "-codec:a:1", "copy",
             "-ar", "44100", "-preset", "veryfast", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
 
