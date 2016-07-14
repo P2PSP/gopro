@@ -33,37 +33,48 @@ import java.net.UnknownHostException;
  */
 public class FFmpegStreamer {
     final private String TAG = getClass().getSimpleName();
-    private final Context mContext;
+    final private Context mContext;
     private FFmpeg mFFmpeg;
+    private boolean mFFmpegLoaded = false;
     private Network mWifiNetwork;
-    private int mLocalPort;
-    private Intent mUDPIntent;
+    final private Intent mUDPIntent;
 
     final private String YOUTUBE_KEY = "x5v1-uqey-h9qf-1fa3";
-    private String[] cmd = {"-i", "udp://:8554?localport="+mLocalPort, "-codec:v:0", "copy", "-codec:a:1", "copy",
+    private String[] cmd = {"-i", "udp://10.5.5.9:8554", "-codec:v:0", "copy", "-codec:a:1", "copy",
             "-ar", "44100", "-preset", "veryfast", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
 
     public FFmpegStreamer(Context context) {
         mContext = context;
-        bindPortOnWifi();
+        mUDPIntent = new Intent(mContext, UDPService.class);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    public void start() {
+        if(!mFFmpegLoaded)
+            bindPortOnWifi();
+        else
+            new RequestStreamTask2().execute();
+    }
+
+    public void stop() {
+        mFFmpeg.killRunningProcesses();
+        mContext.stopService(mUDPIntent);
+        Log.i(TAG, "ffmpeg killRunningProcesses");
+    }
+
     private void bindPortOnWifi() {
         final ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
         connectivityManager.requestNetwork(wifiNetworkReq, new ConnectivityManager.NetworkCallback() {
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
             @Override
             public void onAvailable (Network network) {
                 try {
-                    Log.i(TAG, "WIFI");
+                    Log.i(TAG, "WIFI AVAILABLE");
                     mWifiNetwork = network;
                     DatagramSocket datagramSocket = new DatagramSocket();
-                    mLocalPort = datagramSocket.getLocalPort();
-                    String UDP_IP = "10.5.5.9";
-                    int UDP_PORT = 8554;
                     network.bindSocket(datagramSocket);
-                    datagramSocket.connect(InetAddress.getByName(UDP_IP), UDP_PORT);
+                    datagramSocket.connect(InetAddress.getByName("10.5.5.9"), 8554);
+                    Log.i(TAG, "PORT: "+ datagramSocket.getLocalPort());
                     setCellularAsDefault();
                 } catch (SocketException e) {
                     e.printStackTrace();
@@ -81,7 +92,6 @@ public class FFmpegStreamer {
         });
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void setCellularAsDefault() {
         final ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
@@ -89,10 +99,9 @@ public class FFmpegStreamer {
             @TargetApi(Build.VERSION_CODES.M)
             @Override
             public void onAvailable (Network network) {
-                Log.i(TAG, "CELLULAR");
+                Log.i(TAG, "CELLULAR AVAILABLE");
                 connectivityManager.bindProcessToNetwork(network);
-                Log.i(TAG, "PORT: "+mLocalPort);
-                start();
+                loadFFMPEG();
             }
 
             @Override
@@ -100,10 +109,6 @@ public class FFmpegStreamer {
                 Log.i(TAG, "CELLULAR LOST");
             }
         });}
-
-    public void start() {
-        loadFFMPEG();
-    }
 
     public void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(mContext);
@@ -127,6 +132,7 @@ public class FFmpegStreamer {
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "ffmpeg loadBinary onFinish");
+                    mFFmpegLoaded = true;
                     new RequestStreamTask2().execute();
                 }
             });
@@ -168,16 +174,9 @@ public class FFmpegStreamer {
         }
     }
 
-    public void kill() {
-        mFFmpeg.killRunningProcesses();
-        mContext.stopService(mUDPIntent);
-        Log.i(TAG, "ffmpeg killRunningProcesses");
-    }
-
     private class RequestStreamTask2 extends AsyncTask<Void, Void, String> {
         final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart";
 
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         protected String doInBackground(Void... voids) {
             try {
@@ -197,7 +196,6 @@ public class FFmpegStreamer {
                 Log.i(TAG, "null");
             else {
                 Log.i(TAG, result);
-                mUDPIntent = new Intent(mContext, UDPService.class);
                 mContext.startService(mUDPIntent);
                 executeCmd();
             }

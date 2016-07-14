@@ -25,7 +25,6 @@
         </activity>
 
         <service android:name=".UDPService" />
-        <service android:name=".FFmpeg.FFmpegStreamService" />
     </application>
 
 </manifest>
