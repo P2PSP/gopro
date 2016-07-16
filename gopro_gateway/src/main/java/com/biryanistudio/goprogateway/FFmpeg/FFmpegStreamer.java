@@ -12,21 +12,19 @@ import android.os.Build;
 import android.util.Log;
 
 import com.biryanistudio.goprogateway.UDPService;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
+import com.biryanistudio.FFmpegLibrary.FFmpeg;
+import com.biryanistudio.FFmpegLibrary.FFmpegExecuteResponseHandler;
+import com.biryanistudio.FFmpegLibrary.LoadBinaryResponseHandler;
+import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegCommandAlreadyRunningException;
+import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegNotSupportedException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.UnknownHostException;
 
 /**
  * Created by Sravan on 10-Jul-16.
@@ -35,30 +33,34 @@ public class FFmpegStreamer {
     final private String TAG = getClass().getSimpleName();
     final private Context mContext;
     private FFmpeg mFFmpeg;
-    private boolean mFFmpegLoaded = false;
     private Network mWifiNetwork;
+    private boolean mWifiBound = false;
+    private boolean mCellularBound = false;
     final private Intent mUDPIntent;
 
-    final private String YOUTUBE_KEY = "";
+    final private String YOUTUBE_KEY = "x5v1-uqey-h9qf-1fa3";
     private String[] cmd = {"-i", "udp://10.5.5.9:8554", "-codec:v:0", "copy", "-codec:a:1", "copy",
-            "-ar", "44100", "-preset", "veryfast", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
+            "-ar", "44100", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
 
     public FFmpegStreamer(Context context) {
         mContext = context;
         mUDPIntent = new Intent(mContext, UDPService.class);
+        loadFFMPEG();
     }
 
     public void start() {
-        if(!mFFmpegLoaded)
+        if(mWifiBound && mCellularBound) {
+            new RequestStreamTask().execute();
+        } else {
             bindPortOnWifi();
-        else
-            new RequestStreamTask2().execute();
+            setCellularAsDefault();
+        }
     }
 
     public void stop() {
+        Log.i(TAG, "FFmpeg killRunningProcess");
         mFFmpeg.killRunningProcesses();
         mContext.stopService(mUDPIntent);
-        Log.i(TAG, "ffmpeg killRunningProcesses");
     }
 
     private void bindPortOnWifi() {
@@ -70,16 +72,12 @@ public class FFmpegStreamer {
             public void onAvailable (Network network) {
                 try {
                     Log.i(TAG, "WIFI AVAILABLE");
+                    mWifiBound = true;
                     mWifiNetwork = network;
                     DatagramSocket datagramSocket = new DatagramSocket();
                     network.bindSocket(datagramSocket);
                     datagramSocket.connect(InetAddress.getByName("10.5.5.9"), 8554);
-                    Log.i(TAG, "PORT: "+ datagramSocket.getLocalPort());
-                    setCellularAsDefault();
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
+                    Log.i(TAG, "DatagramSocket PORT: "+ datagramSocket.getLocalPort());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -96,12 +94,11 @@ public class FFmpegStreamer {
         final ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
         connectivityManager.requestNetwork(cellularNetworkReq, new ConnectivityManager.NetworkCallback() {
-            @TargetApi(Build.VERSION_CODES.M)
             @Override
             public void onAvailable (Network network) {
                 Log.i(TAG, "CELLULAR AVAILABLE");
+                mCellularBound = true;
                 connectivityManager.bindProcessToNetwork(network);
-                loadFFMPEG();
             }
 
             @Override
@@ -116,24 +113,22 @@ public class FFmpegStreamer {
             mFFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                 @Override
                 public void onStart() {
-                    Log.i(TAG, "ffmpeg loadBinary onStart");
+                    Log.i(TAG, "FFmpeg loadBinary onStart");
                 }
 
                 @Override
                 public void onFailure() {
-                    Log.i(TAG, "ffmpeg loadBinary onFailure");
+                    Log.i(TAG, "FFmpeg loadBinary onFailure");
                 }
 
                 @Override
                 public void onSuccess() {
-                    Log.i(TAG, "ffmpeg loadBinary onSuccess");
+                    Log.i(TAG, "FFmpeg loadBinary onSuccess");
                 }
 
                 @Override
                 public void onFinish() {
-                    Log.i(TAG, "ffmpeg loadBinary onFinish");
-                    mFFmpegLoaded = true;
-                    new RequestStreamTask2().execute();
+                    Log.i(TAG, "FFmpeg loadBinary onFinish");
                 }
             });
         } catch (FFmpegNotSupportedException e) {
@@ -146,7 +141,7 @@ public class FFmpegStreamer {
             mFFmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
                 @Override
                 public void onStart() {
-                    Log.i(TAG, "ffmpeg execute onStart");
+                    Log.i(TAG, "FFmpeg execute onStart");
                 }
 
                 @Override
@@ -166,7 +161,7 @@ public class FFmpegStreamer {
 
                 @Override
                 public void onFinish() {
-                    Log.i(TAG, "ffmpeg execute onFinish");
+                    Log.i(TAG, "FFmpeg execute onFinish");
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -174,7 +169,7 @@ public class FFmpegStreamer {
         }
     }
 
-    private class RequestStreamTask2 extends AsyncTask<Void, Void, String> {
+    private class RequestStreamTask extends AsyncTask<Void, Void, String> {
         final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart";
 
         @Override

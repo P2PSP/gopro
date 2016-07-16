@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.biryanistudio.goprogateway"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -22,7 +22,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.+'
-    compile 'com.writingminds:FFmpegAndroid:0.3.2'
+    compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.squareup.okhttp3:okhttp:3.3.1'
+    compile project(':FFmpegLibrary')
 }
