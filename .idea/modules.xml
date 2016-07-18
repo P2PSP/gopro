@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/FFmpegLibrary/FFmpegLibrary.iml" filepath="$PROJECT_DIR$/FFmpegLibrary/FFmpegLibrary.iml" />
+      <module fileurl="file://$PROJECT_DIR$/FFmpegLibrary/FFmpegLibrary.iml" filepath="$PROJECT_DIR$/FFmpegLibrary/FFmpegLibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/gopro.iml" filepath="$PROJECT_DIR$/gopro.iml" />
       <module fileurl="file://$PROJECT_DIR$/gopro_gateway/gopro_gateway.iml" filepath="$PROJECT_DIR$/gopro_gateway/gopro_gateway.iml" />
     </modules>

@@ -1,5 +1,6 @@
 package com.biryanistudio.goprogateway.FFmpeg;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import com.biryanistudio.FFmpegLibrary.FFmpegExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.LoadBinaryResponseHandler;
 import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegCommandAlreadyRunningException;
 import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegNotSupportedException;
+import com.biryanistudio.goprogateway.R;
 
 /**
  * Created by Sravan on 10-Jul-16.
@@ -37,6 +39,17 @@ public class FFmpegUpload extends Service {
     @Override
     public void onCreate() {
         loadFFMPEG();
+        Notification notification = new Notification.Builder(this)
+                .setContentTitle("Upload")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(true)
+                .build();
+        startForeground(953, notification);
+    }
+
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        return START_STICKY;
     }
 
     private void setCellularAsDefault() {

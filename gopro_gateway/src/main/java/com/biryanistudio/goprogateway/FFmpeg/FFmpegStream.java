@@ -1,6 +1,7 @@
 package com.biryanistudio.goprogateway.FFmpeg;
 
 import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +21,14 @@ import com.biryanistudio.FFmpegLibrary.FFmpegExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.LoadBinaryResponseHandler;
 import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegCommandAlreadyRunningException;
 import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegNotSupportedException;
-import com.biryanistudio.goprogateway.UDPService;
+import com.biryanistudio.goprogateway.R;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -34,8 +38,6 @@ import java.net.URLConnection;
 public class FFmpegStream extends Service {
     final private String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
-    private Intent mUDPIntent;
-
     private String[] cmd = {"-i", "udp://:8554", "/storage/emulated/0/output.avi"};
 
     @Nullable
@@ -47,8 +49,19 @@ public class FFmpegStream extends Service {
     @Override
     public void onCreate() {
         NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
-        mUDPIntent = new Intent(this, UDPService.class);
+        // mUDPIntent = new Intent(this, UDPService.class);
+        Notification notification = new Notification.Builder(this)
+                .setContentTitle("Stream")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(true)
+                .build();
+        startForeground(953, notification);
         loadFFMPEG();
+    }
+
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        return START_STICKY;
     }
 
     private void bindPortOnWifi() {
@@ -60,6 +73,13 @@ public class FFmpegStream extends Service {
             public void onAvailable (Network network) {
                 Log.i(TAG, "WIFI AVAILABLE");
                 connectivityManager.bindProcessToNetwork(network);
+                try {
+                    DatagramSocket socket = new DatagramSocket();
+                    network.bindSocket(socket);
+                    socket.connect(InetAddress.getByName("10.5.5.9"), 8554);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 new RequestStreamTask().execute();
             }
 
@@ -70,7 +90,7 @@ public class FFmpegStream extends Service {
         });
     }
 
-    public void loadFFMPEG() {
+    private void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(this);
         try {
             mFFmpeg.loadBinary(new LoadBinaryResponseHandler() {
@@ -156,9 +176,30 @@ public class FFmpegStream extends Service {
                 Log.i(TAG, "null");
             else {
                 Log.i(TAG, result);
-                startService(mUDPIntent);
+                // startService(mUDPIntent);
+                // new KeepAliveTask().execute();
                 executeCmd();
             }
+        }
+    }
+
+    private class KeepAliveTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            try {
+                String UDP_IP = "10.5.5.9";
+                int UDP_PORT = 8554;
+                byte[] message = "_GPHD_:0:0:2:0.000000".getBytes();
+                InetAddress address = InetAddress.getByName(UDP_IP);
+                DatagramPacket packet = new DatagramPacket(message, message.length, address, UDP_PORT);
+                DatagramSocket socket = new DatagramSocket();
+                while (true) {
+                    socket.send(packet);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
         }
     }
 }
