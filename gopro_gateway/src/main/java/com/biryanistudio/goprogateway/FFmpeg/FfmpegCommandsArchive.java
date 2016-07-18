@@ -3,7 +3,7 @@ package com.biryanistudio.goprogateway.FFmpeg;
 /**
  * Created by Sravan on 08-Jul-16.
  */
-public class FfmpegCommandsArchive {
+public class FFmpegCommandsArchive {
     /*
     Archive of ffmpeg commands:
     1. final private String[] cmd = {"-codec:v:0", "h264", "-codec:a:1", "aac", "-i", "udp://:8554", "/storage/emulated/0/output.mp4"};

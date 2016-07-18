@@ -10,6 +10,7 @@ import android.net.NetworkRequest;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.biryanistudio.goprogateway.UDPService;
 import com.biryanistudio.FFmpegLibrary.FFmpeg;
@@ -39,27 +40,31 @@ public class FFmpegStreamer {
     final private Intent mUDPIntent;
 
     final private String YOUTUBE_KEY = "x5v1-uqey-h9qf-1fa3";
-    private String[] cmd = {"-i", "udp://10.5.5.9:8554", "-codec:v:0", "copy", "-codec:a:1", "copy",
+    private String[] cmd = {"-i", "udp://:8554", "-codec:v:0", "libx264", "-preset", "veryfast", "-codec:a:1", "copy",
             "-ar", "44100", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
 
     public FFmpegStreamer(Context context) {
         mContext = context;
         mUDPIntent = new Intent(mContext, UDPService.class);
         loadFFMPEG();
+        bindPortOnWifi();
+        setCellularAsDefault();
     }
 
     public void start() {
         if(mWifiBound && mCellularBound) {
             new RequestStreamTask().execute();
         } else {
-            bindPortOnWifi();
-            setCellularAsDefault();
+            Toast.makeText(mContext, "Waiting for networks... try again soon!", Toast.LENGTH_SHORT)
+                    .show();
+            Log.i(TAG, "Waiting for networks...");
         }
     }
 
     public void stop() {
         Log.i(TAG, "FFmpeg killRunningProcess");
-        mFFmpeg.killRunningProcesses();
+        if(mFFmpeg.isFFmpegCommandRunning())
+            mFFmpeg.killRunningProcesses();
         mContext.stopService(mUDPIntent);
     }
 
@@ -86,6 +91,7 @@ public class FFmpegStreamer {
             @Override
             public void onLost (Network network) {
                 Log.i(TAG, "WIFI LOST");
+                mWifiBound = false;
             }
         });
     }
@@ -104,6 +110,7 @@ public class FFmpegStreamer {
             @Override
             public void onLost (Network network) {
                 Log.i(TAG, "CELLULAR LOST");
+                mCellularBound = false;
             }
         });}
 
