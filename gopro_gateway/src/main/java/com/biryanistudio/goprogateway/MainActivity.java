@@ -3,7 +3,6 @@ package com.biryanistudio.goprogateway;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
-import android.security.NetworkSecurityPolicy;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -21,8 +20,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         getFragmentManager().beginTransaction().replace(R.id.container, new WifiFragment()).commit();
 
-        NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
-
+        // NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
         Log.i("TAG", Arrays.asList(Build.SUPPORTED_ABIS).toString());
     }
 }

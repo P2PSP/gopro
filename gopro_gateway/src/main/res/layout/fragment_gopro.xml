@@ -23,12 +23,20 @@
             android:layout_centerHorizontal="true"/>
 
         <Button
+            android:id="@+id/btn_start_upload"
+            android:text="@string/btn_start_upload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/btn_start_stream" />
+
+        <Button
             android:id="@+id/btn_stop_stream"
             android:text="@string/btn_stop_stream"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_below="@id/btn_start_stream" />
+            android:layout_below="@id/btn_start_upload" />
 
         <TextView
             android:id="@+id/tv_log"
