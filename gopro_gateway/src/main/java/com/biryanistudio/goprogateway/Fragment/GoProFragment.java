@@ -10,7 +10,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
-import com.biryanistudio.goprogateway.FFmpeg.FFmpegStreamer;
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
 import com.biryanistudio.goprogateway.R;
 
@@ -23,14 +22,12 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     private Button mButtonStartStream;
     private Button mButtonStartUpload;
     private Button mButtonStopStream;
-    private FFmpegStreamer mFFmpegStreamer;
-    private Intent mStartStream;
-    private Intent mStartUpload;
+    private Intent mIntentStartStream;
+    private Intent mIntentStartUpload;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // mFFmpegStreamer = new FFmpegStreamer(getActivity());
     }
 
     @Override
@@ -44,8 +41,8 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         mButtonStopStream = (Button) view.findViewById(R.id.btn_stop_stream);
         mButtonStopStream.setOnClickListener(this);
 
-        mStartStream = new Intent(getActivity(), FFmpegStream.class);
-        mStartUpload = new Intent(getActivity(), FFmpegUpload.class);
+        mIntentStartStream = new Intent(getActivity(), FFmpegStream.class);
+        mIntentStartUpload = new Intent(getActivity(), FFmpegUpload.class);
         return view;
     }
 
@@ -54,26 +51,18 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         int id = view.getId();
         switch (id) {
             case R.id.btn_start_stream:
-                // mFFmpegStreamer.start();
-                getActivity().startService(mStartStream);
+                getActivity().startService(mIntentStartStream);
                 break;
             case R.id.btn_start_upload:
-                getActivity().startService(mStartUpload);
+                getActivity().startService(mIntentStartUpload);
                 break;
             case R.id.btn_stop_stream:
-                getActivity().stopService(mStartStream);
-                getActivity().stopService(mStartUpload);
-                // mFFmpegStreamer.stop();
+                getActivity().stopService(mIntentStartStream);
+                getActivity().stopService(mIntentStartUpload);
                 break;
             default:
                 break;
 
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        // mFFmpegStreamer.stop();
     }
 }

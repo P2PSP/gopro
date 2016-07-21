@@ -27,7 +27,7 @@ public class FFmpegUpload extends Service {
     private FFmpeg mFFmpeg;
 
     final private String YOUTUBE_KEY = "x5v1-uqey-h9qf-1fa3";
-    private String[] cmd = {"-i", "/storage/emulated/0/output.avi",
+    final private String[] cmd = {"-re", "-i", "/storage/emulated/0/output.avi",
             "-ar", "44100", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
 
     @Nullable
@@ -37,37 +37,24 @@ public class FFmpegUpload extends Service {
     }
 
     @Override
-    public void onCreate() {
+    public int onStartCommand (Intent intent, int flags, int startId) {
         loadFFMPEG();
         Notification notification = new Notification.Builder(this)
                 .setContentTitle("Upload")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(true)
                 .build();
-        startForeground(953, notification);
+        startForeground(954, notification);
+        return START_NOT_STICKY;
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
-        return START_STICKY;
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy");
+        if(mFFmpeg.isFFmpegCommandRunning())
+            mFFmpeg.killRunningProcesses();
     }
-
-    private void setCellularAsDefault() {
-        final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
-        connectivityManager.requestNetwork(cellularNetworkReq, new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable (Network network) {
-                Log.i(TAG, "CELLULAR AVAILABLE");
-                connectivityManager.bindProcessToNetwork(network);
-                executeCmd();
-            }
-
-            @Override
-            public void onLost (Network network) {
-                Log.i(TAG, "CELLULAR LOST");
-            }
-        });}
 
     public void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(this);
@@ -98,6 +85,23 @@ public class FFmpegUpload extends Service {
             e.printStackTrace();
         }
     }
+
+    private void setCellularAsDefault() {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
+        connectivityManager.requestNetwork(cellularNetworkReq, new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable (Network network) {
+                Log.i(TAG, "CELLULAR AVAILABLE");
+                connectivityManager.bindProcessToNetwork(network);
+                executeCmd();
+            }
+
+            @Override
+            public void onLost (Network network) {
+                Log.i(TAG, "CELLULAR LOST");
+            }
+        });}
 
     private void executeCmd() {
         try {

@@ -31,6 +31,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Sravan on 10-Jul-16.
@@ -38,7 +40,8 @@ import java.net.URLConnection;
 public class FFmpegStream extends Service {
     final private String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
-    private String[] cmd = {"-i", "udp://:8554", "/storage/emulated/0/output.avi"};
+    private Timer mTimer;
+    final private String[] CMD = {"-i", "udp://:8554", "/storage/emulated/0/output.avi"};
 
     @Nullable
     @Override
@@ -47,9 +50,8 @@ public class FFmpegStream extends Service {
     }
 
     @Override
-    public void onCreate() {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
-        // mUDPIntent = new Intent(this, UDPService.class);
         Notification notification = new Notification.Builder(this)
                 .setContentTitle("Stream")
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -57,37 +59,16 @@ public class FFmpegStream extends Service {
                 .build();
         startForeground(953, notification);
         loadFFMPEG();
+        return START_NOT_STICKY;
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
-        return START_STICKY;
-    }
-
-    private void bindPortOnWifi() {
-        final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
-        connectivityManager.requestNetwork(wifiNetworkReq, new ConnectivityManager.NetworkCallback() {
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
-            @Override
-            public void onAvailable (Network network) {
-                Log.i(TAG, "WIFI AVAILABLE");
-                connectivityManager.bindProcessToNetwork(network);
-                try {
-                    DatagramSocket socket = new DatagramSocket();
-                    network.bindSocket(socket);
-                    socket.connect(InetAddress.getByName("10.5.5.9"), 8554);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                new RequestStreamTask().execute();
-            }
-
-            @Override
-            public void onLost (Network network) {
-                Log.i(TAG, "WIFI LOST");
-            }
-        });
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy");
+        mTimer.cancel();
+        if (mFFmpeg.isFFmpegCommandRunning())
+            mFFmpeg.killRunningProcesses();
     }
 
     private void loadFFMPEG() {
@@ -120,9 +101,28 @@ public class FFmpegStream extends Service {
         }
     }
 
+    private void bindPortOnWifi() {
+        final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
+        connectivityManager.requestNetwork(wifiNetworkReq, new ConnectivityManager.NetworkCallback() {
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+            @Override
+            public void onAvailable(Network network) {
+                Log.i(TAG, "WIFI AVAILABLE");
+                connectivityManager.bindProcessToNetwork(network);
+                new RequestStreamTask().execute();
+            }
+
+            @Override
+            public void onLost(Network network) {
+                Log.i(TAG, "WIFI LOST");
+            }
+        });
+    }
+
     private void executeCmd() {
         try {
-            mFFmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
+            mFFmpeg.execute(CMD, new FFmpegExecuteResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg execute onStart");
@@ -171,35 +171,41 @@ public class FFmpegStream extends Service {
         }
 
         @Override
-        protected void onPostExecute (String result) {
-            if(result == null)
+        protected void onPostExecute(String result) {
+            if (result == null)
                 Log.i(TAG, "null");
             else {
                 Log.i(TAG, result);
-                // startService(mUDPIntent);
-                // new KeepAliveTask().execute();
                 executeCmd();
+                keepAlive();
             }
         }
     }
 
-    private class KeepAliveTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... voids) {
-            try {
-                String UDP_IP = "10.5.5.9";
-                int UDP_PORT = 8554;
-                byte[] message = "_GPHD_:0:0:2:0.000000".getBytes();
-                InetAddress address = InetAddress.getByName(UDP_IP);
-                DatagramPacket packet = new DatagramPacket(message, message.length, address, UDP_PORT);
-                DatagramSocket socket = new DatagramSocket();
-                while (true) {
-                    socket.send(packet);
+    private void keepAlive() {
+        try {
+            String UDP_IP = "10.5.5.9";
+            int UDP_PORT = 8554;
+            byte[] message = "_GPHD_:0:0:2:0.000000".getBytes();
+            InetAddress address = InetAddress.getByName(UDP_IP);
+            final DatagramPacket packet = new DatagramPacket(message, message.length, address, UDP_PORT);
+            final DatagramSocket socket = new DatagramSocket();
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        Log.i(TAG, "Best effort UDP");
+                        socket.send(packet);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
+            };
+            mTimer = new Timer();
+            mTimer.scheduleAtFixedRate(timerTask, 500, 10000);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
 }
