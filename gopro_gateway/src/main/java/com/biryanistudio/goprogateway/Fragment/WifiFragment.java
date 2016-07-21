@@ -1,11 +1,15 @@
 package com.biryanistudio.goprogateway.Fragment;
 
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +22,14 @@ import com.biryanistudio.goprogateway.R;
  */
 public class WifiFragment extends Fragment implements View.OnClickListener {
     final String TAG = getClass().getSimpleName();
-    TextView wifiMessage;
+    private TextView wifiMessage;
+    private BroadcastReceiver wifiChangedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.i(TAG, "Connectivity change, updating views");
+            updateViews();
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -33,6 +44,15 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
     public void onStart() {
         super.onStart();
         updateViews();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        getActivity().registerReceiver(wifiChangedReceiver, intentFilter);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().unregisterReceiver(wifiChangedReceiver);
     }
 
     @Override
@@ -48,8 +68,8 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
     }
 
     private void updateViews() {
-        WifiManager wm = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
-        String SSID = wm.getConnectionInfo().getSSID();
+        WifiManager wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        String SSID = wifiManager.getConnectionInfo().getSSID();
         wifiMessage.setText("Currently connected to: " + SSID);
     }
 }
