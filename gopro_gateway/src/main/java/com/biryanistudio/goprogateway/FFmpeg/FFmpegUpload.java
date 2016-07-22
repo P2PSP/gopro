@@ -12,11 +12,11 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.biryanistudio.FFmpegLibrary.Exception.FFmpegCommandAlreadyRunningException;
+import com.biryanistudio.FFmpegLibrary.Exception.FFmpegNotSupportedException;
 import com.biryanistudio.FFmpegLibrary.FFmpeg;
-import com.biryanistudio.FFmpegLibrary.FFmpegExecuteResponseHandler;
-import com.biryanistudio.FFmpegLibrary.LoadBinaryResponseHandler;
-import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegCommandAlreadyRunningException;
-import com.biryanistudio.FFmpegLibrary.exceptions.FFmpegNotSupportedException;
+import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegExecuteResponseHandler;
+import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegLoadBinaryResponseHandler;
 import com.biryanistudio.goprogateway.R;
 
 /**
@@ -59,7 +59,7 @@ public class FFmpegUpload extends Service {
     public void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(this);
         try {
-            mFFmpeg.loadBinary(new LoadBinaryResponseHandler() {
+            mFFmpeg.loadBinary(new IFFmpegLoadBinaryResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg loadBinary onStart");
@@ -105,7 +105,7 @@ public class FFmpegUpload extends Service {
 
     private void executeCmd() {
         try {
-            mFFmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
+            mFFmpeg.execute(cmd, new IFFmpegExecuteResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg execute onStart");

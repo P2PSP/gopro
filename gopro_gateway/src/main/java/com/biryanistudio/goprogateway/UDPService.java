@@ -2,7 +2,6 @@ package com.biryanistudio.goprogateway;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.net.Network;
 import android.util.Log;
 
 import java.io.IOException;
@@ -15,7 +14,6 @@ import java.net.InetAddress;
  */
 public class UDPService extends IntentService {
     final private String TAG = getClass().getSimpleName();
-    private Network mWifiNetwork;
 
     public UDPService() {
         super("UDPService");
@@ -35,10 +33,10 @@ public class UDPService extends IntentService {
             InetAddress address = InetAddress.getByName(UDP_IP);
             DatagramPacket packet = new DatagramPacket(message, message.length, address, UDP_PORT);
             DatagramSocket socket = new DatagramSocket();
-            while(true) {
+            while (true) {
                 socket.send(packet);
             }
-        } catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

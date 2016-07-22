@@ -1,41 +1,57 @@
 package com.biryanistudio.FFmpegLibrary;
 
+import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegExecuteUpdateHandler;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
-class ShellCommand {
+public class ShellCommand {
+    final private String TAG = getClass().getSimpleName();
+    private Process mProcess;
+    private IFFmpegExecuteUpdateHandler mFFmpegExecuteUpdateHandler;
 
-    Process run(String[] commandString) {
-        Process process = null;
+    public ShellCommand(IFFmpegExecuteUpdateHandler ffmpegExecuteUpdateHandler) {
+        mFFmpegExecuteUpdateHandler = ffmpegExecuteUpdateHandler;
+    }
+
+    public void run(String[] command) {
         try {
-            process = Runtime.getRuntime().exec(commandString);
+            mProcess = Runtime.getRuntime().exec(command);
         } catch (IOException e) {
-            Log.e("Exception while trying to run: " + commandString, e);
+            e.printStackTrace();
         }
-        return process;
     }
 
-    CommandResult runWaitFor(String[] s) {
-        Process process = run(s);
-
-        Integer exitValue = null;
-        String output = null;
-        try {
-            if (process != null) {
-                exitValue = process.waitFor();
-
-                if (CommandResult.success(exitValue)) {
-                    output = Util.convertInputStreamToString(process.getInputStream());
-                } else {
-                    output = Util.convertInputStreamToString(process.getErrorStream());
+    public boolean getAndPublishUpdates() {
+        String line;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(mProcess.getInputStream()));
+        while (!isProcessCompleted()) {
+            try {
+                while ((line = reader.readLine()) != null) {
+                    mFFmpegExecuteUpdateHandler.publishUpdate(line);
                 }
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            Log.e("Interrupt exception", e);
-        } finally {
-            Util.destroyProcess(process);
         }
-
-        return new CommandResult(CommandResult.success(exitValue), output);
+        return false;
     }
 
+    public boolean isProcessCompleted() {
+        try {
+            if (mProcess == null) return true;
+            mProcess.exitValue();
+            return true;
+        } catch (IllegalThreadStateException e) {
+            // Do nothing
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void destroyProcess() {
+        if (mProcess != null) mProcess.destroy();
+    }
 }

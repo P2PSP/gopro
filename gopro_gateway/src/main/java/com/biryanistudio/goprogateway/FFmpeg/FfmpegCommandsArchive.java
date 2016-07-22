@@ -5,7 +5,7 @@ package com.biryanistudio.goprogateway.FFmpeg;
  */
 public class FFmpegCommandsArchive {
     /*
-    Archive of ffmpeg commands:
+    Archive of arm commands:
     1. final private String[] cmd = {"-codec:v:0", "h264", "-codec:a:1", "aac", "-i", "udp://:8554", "/storage/emulated/0/output.mp4"};
     2. Added -f mpegts flags, as seen below:
     final private String[] cmd = {"-codec:v:0", "h264", "-codec:a:1", "aac", "-f", "mpegts", "-i", "udp://:8554", "/storage/emulated/0/output.mp4"};
