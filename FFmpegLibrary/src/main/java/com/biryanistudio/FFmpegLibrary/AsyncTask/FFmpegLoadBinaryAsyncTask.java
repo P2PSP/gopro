@@ -21,13 +21,18 @@ public class FFmpegLoadBinaryAsyncTask extends AsyncTask<Void, Void, Boolean> {
     }
 
     @Override
+    protected void onPreExecute() {
+        mFFmpegLoadBinaryResponseHandler.onStart();
+    }
+
+    @Override
     protected Boolean doInBackground(Void... params) {
         File ffmpegFile = new File(FileUtils.getFFmpegPath(mContext));
         if (ffmpegFile.exists()) {
+            Log.i(TAG, "FFmpeg already exists.");
             return false;
         } else {
-            boolean isFileCopied = FileUtils.copyBinaryFromAssetsToData(mContext,
-                    File.separator + FileUtils.mFFmpegFileName);
+            boolean isFileCopied = FileUtils.copyBinaryFromAssetsToData(mContext);
 
             // Make file executable
             if (isFileCopied) {

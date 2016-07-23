@@ -11,7 +11,7 @@ import java.io.OutputStream;
 
 public class FileUtils {
     final private static String TAG = FileUtils.class.getSimpleName();
-    final public static String mFFmpegFileName = "ffmpeg";
+    final public static String mFFmpegFileName = "arm";
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
     private static final int EOF = -1;
 
@@ -24,12 +24,12 @@ public class FileUtils {
         return context.getFilesDir();
     }
 
-    public static boolean copyBinaryFromAssetsToData(Context context, String fileNameFromAssets) {
+    public static boolean copyBinaryFromAssetsToData(Context context) {
         // Create files directory under /data/data/package name
         File filesDirectory = getFilesDirectory(context);
         InputStream is;
         try {
-            is = context.getAssets().open(fileNameFromAssets);
+            is = context.getAssets().open(mFFmpegFileName);
             // Copy file from assets to files dir
             final FileOutputStream os = new FileOutputStream(new File(filesDirectory,
                     mFFmpegFileName));

@@ -66,7 +66,7 @@ public class FFmpegStream extends Service {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-        mTimer.cancel();
+        if(mTimer != null) mTimer.cancel();
         if (mFFmpeg.isFFmpegCommandRunning())
             mFFmpeg.killRunningProcesses();
     }
@@ -88,12 +88,12 @@ public class FFmpegStream extends Service {
                 @Override
                 public void onSuccess() {
                     Log.i(TAG, "FFmpeg loadBinary onSuccess");
+                    // bindPortOnWifi();
                 }
 
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "FFmpeg loadBinary onFinish");
-                    bindPortOnWifi();
                 }
             });
         } catch (FFmpegNotSupportedException e) {
@@ -173,7 +173,7 @@ public class FFmpegStream extends Service {
         @Override
         protected void onPostExecute(String result) {
             if (result == null)
-                Log.i(TAG, "null");
+                Log.i(TAG, "null result");
             else {
                 Log.i(TAG, result);
                 executeCmd();

@@ -28,9 +28,9 @@ public class FFmpeg {
 
     public void loadBinary(IFFmpegLoadBinaryResponseHandler ffmpegLoadBinaryResponseHandler)
             throws FFmpegNotSupportedException {
-        switch (new CpuArchHelper().getCpuArch()) {
+        switch (CpuArchHelper.getCpuArch()) {
             case ARMv7:
-                Log.i(TAG, "Loading FFmpeg for ARMv7 CPU");
+                Log.i(TAG, "Loading FFmpeg for ARMv7 CPU.");
                 mFFmpegLoadBinaryAsyncTask = new FFmpegLoadBinaryAsyncTask(mContext,
                         ffmpegLoadBinaryResponseHandler);
                 mFFmpegLoadBinaryAsyncTask.execute();
@@ -44,7 +44,7 @@ public class FFmpeg {
             throws FFmpegCommandAlreadyRunningException {
         if (mFFmpegExecuteAsyncTask != null) {
             throw new FFmpegCommandAlreadyRunningException("FFmpeg command is already running, " +
-                    "you are only allowed to run single command at a time");
+                    "you are only allowed to run single command at a time.");
         }
         if (command.length != 0) {
             String[] ffmpegBinaryPath = new String[]{FileUtils.getFFmpegPath(mContext)};
