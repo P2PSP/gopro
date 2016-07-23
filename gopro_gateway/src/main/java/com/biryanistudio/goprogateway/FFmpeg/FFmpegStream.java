@@ -14,13 +14,14 @@ import android.os.Build;
 import android.os.IBinder;
 import android.security.NetworkSecurityPolicy;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.biryanistudio.FFmpegLibrary.Exception.FFmpegCommandAlreadyRunningException;
 import com.biryanistudio.FFmpegLibrary.Exception.FFmpegNotSupportedException;
 import com.biryanistudio.FFmpegLibrary.FFmpeg;
-import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegExecuteResponseHandler;
-import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegLoadBinaryResponseHandler;
+import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
+import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 import com.biryanistudio.goprogateway.R;
 
 import java.io.BufferedReader;
@@ -51,30 +52,35 @@ public class FFmpegStream extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "onStartCommand");
         NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+        loadFFMPEG();
         Notification notification = new Notification.Builder(this)
                 .setContentTitle("Stream")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(true)
                 .build();
         startForeground(953, notification);
-        loadFFMPEG();
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         Log.i(TAG, "onDestroy");
-        if(mTimer != null) mTimer.cancel();
-        if (mFFmpeg.isFFmpegCommandRunning())
-            mFFmpeg.killRunningProcesses();
+        if(mTimer != null) {
+            Log.i(TAG, "Clearing timer.");
+            mTimer.purge();
+            mTimer.cancel();
+        }
+        if(mFFmpeg.isFFmpegCommandRunning()) {
+            Log.i(TAG, "Killing process: " + mFFmpeg.killRunningProcesses());
+        }
     }
 
     private void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(this);
         try {
-            mFFmpeg.loadBinary(new IFFmpegLoadBinaryResponseHandler() {
+            mFFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg loadBinary onStart");
@@ -88,7 +94,7 @@ public class FFmpegStream extends Service {
                 @Override
                 public void onSuccess() {
                     Log.i(TAG, "FFmpeg loadBinary onSuccess");
-                    // bindPortOnWifi();
+                    bindPortOnWifi();
                 }
 
                 @Override
@@ -109,8 +115,10 @@ public class FFmpegStream extends Service {
             @Override
             public void onAvailable(Network network) {
                 Log.i(TAG, "WIFI AVAILABLE");
-                connectivityManager.bindProcessToNetwork(network);
-                new RequestStreamTask().execute();
+                if (connectivityManager.bindProcessToNetwork(network))
+                    new RequestStreamTask().execute();
+                else
+                    Log.i(TAG, "Could not bind to WIFI.");
             }
 
             @Override
@@ -122,7 +130,7 @@ public class FFmpegStream extends Service {
 
     private void executeCmd() {
         try {
-            mFFmpeg.execute(CMD, new IFFmpegExecuteResponseHandler() {
+            mFFmpeg.execute(CMD, new ExecuteResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg execute onStart");
@@ -146,6 +154,14 @@ public class FFmpegStream extends Service {
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "FFmpeg execute onFinish");
+                }
+
+                @Override
+                public void onUploadReady() {
+                    Log.i(TAG, "FFmpeg execute onUploadReady");
+                    Intent intent = new Intent();
+                    intent.setAction("com.biryanistudio.goprogateway.UPLOAD_READY");
+                    LocalBroadcastManager.getInstance(FFmpegStream.this).sendBroadcast(intent);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -206,6 +222,5 @@ public class FFmpegStream extends Service {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

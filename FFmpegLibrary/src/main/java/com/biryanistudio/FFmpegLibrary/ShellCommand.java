@@ -1,6 +1,6 @@
 package com.biryanistudio.FFmpegLibrary;
 
-import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegExecuteUpdateHandler;
+import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,12 +8,7 @@ import java.io.InputStreamReader;
 
 public class ShellCommand {
     final private String TAG = getClass().getSimpleName();
-    private Process mProcess;
-    private IFFmpegExecuteUpdateHandler mFFmpegExecuteUpdateHandler;
-
-    public ShellCommand(IFFmpegExecuteUpdateHandler ffmpegExecuteUpdateHandler) {
-        mFFmpegExecuteUpdateHandler = ffmpegExecuteUpdateHandler;
-    }
+    public Process mProcess;
 
     public void run(String[] command) {
         try {
@@ -23,13 +18,14 @@ public class ShellCommand {
         }
     }
 
-    public boolean getAndPublishUpdates() {
+    public boolean getAndPublishUpdates(ExecuteResponseHandler executeResponseHandler) {
         String line;
-        BufferedReader reader = new BufferedReader(new InputStreamReader(mProcess.getInputStream()));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(mProcess.getErrorStream()));
         while (!isProcessCompleted()) {
             try {
                 while ((line = reader.readLine()) != null) {
-                    mFFmpegExecuteUpdateHandler.publishUpdate(line);
+                    if(line.contains("Press [q]")) executeResponseHandler.onUploadReady();
+                    executeResponseHandler.onProgress(line);
                 }
                 return true;
             } catch (IOException e) {
@@ -46,9 +42,8 @@ public class ShellCommand {
             return true;
         } catch (IllegalThreadStateException e) {
             // Do nothing
-            e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public void destroyProcess() {

@@ -53,7 +53,7 @@ public class FileUtils {
             try {
                 inputStream.close();
             } catch (IOException e) {
-                // Do nothing
+                e.printStackTrace();
             }
         }
     }
@@ -64,7 +64,7 @@ public class FileUtils {
                 outputStream.flush();
                 outputStream.close();
             } catch (IOException e) {
-                // Do nothing
+                e.printStackTrace();
             }
         }
     }

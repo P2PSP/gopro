@@ -4,11 +4,8 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 import com.biryanistudio.goprogateway.Fragment.WifiFragment;
-
-import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +18,5 @@ public class MainActivity extends AppCompatActivity {
         getFragmentManager().beginTransaction().replace(R.id.container, new WifiFragment()).commit();
 
         // NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
-        Log.i("TAG", Arrays.asList(Build.SUPPORTED_ABIS).toString());
     }
 }

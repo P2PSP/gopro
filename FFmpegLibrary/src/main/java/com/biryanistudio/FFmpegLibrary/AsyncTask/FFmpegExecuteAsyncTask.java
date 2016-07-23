@@ -2,53 +2,39 @@ package com.biryanistudio.FFmpegLibrary.AsyncTask;
 
 import android.os.AsyncTask;
 
-import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegExecuteResponseHandler;
-import com.biryanistudio.FFmpegLibrary.Interface.IFFmpegExecuteUpdateHandler;
+import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.ShellCommand;
 
-public class FFmpegExecuteAsyncTask extends AsyncTask<String[], String, Void>
-        implements IFFmpegExecuteUpdateHandler {
+public class FFmpegExecuteAsyncTask extends AsyncTask<String[], Void, Boolean> {
     final private String TAG = getClass().getSimpleName();
-    final private IFFmpegExecuteResponseHandler mFFmpegExecuteResponseHandler;
+    final private ExecuteResponseHandler mExecuteResponseHandler;
     private ShellCommand mShellCommand;
 
-    public FFmpegExecuteAsyncTask(IFFmpegExecuteResponseHandler ffmpegExecuteResponseHandler) {
-        mFFmpegExecuteResponseHandler = ffmpegExecuteResponseHandler;
+    public FFmpegExecuteAsyncTask(ExecuteResponseHandler executeResponseHandler) {
+        mExecuteResponseHandler = executeResponseHandler;
     }
 
     @Override
     protected void onPreExecute() {
-        mFFmpegExecuteResponseHandler.onStart();
+        mExecuteResponseHandler.onStart();
     }
 
     @Override
-    protected Void doInBackground(String[]... params) {
-        mShellCommand = new ShellCommand(this);
+    protected Boolean doInBackground(String[]... params) {
+        mShellCommand = new ShellCommand();
         mShellCommand.run(params[0]);
-        return null;
+        return mShellCommand.getAndPublishUpdates(mExecuteResponseHandler);
     }
 
     @Override
-    protected void onProgressUpdate(String... values) {
-        if (values != null && values[0] != null && mFFmpegExecuteResponseHandler != null) {
-            mFFmpegExecuteResponseHandler.onProgress(values[0]);
-        }
-    }
-
-    @Override
-    protected void onPostExecute(Void result) {
-        if(mShellCommand.getAndPublishUpdates()) {
-            mFFmpegExecuteResponseHandler.onSuccess("Normal termination.");
+    protected void onPostExecute(Boolean result) {
+        if(result) {
+            mExecuteResponseHandler.onSuccess("Normal termination.");
             mShellCommand.destroyProcess();
         } else {
-            mFFmpegExecuteResponseHandler.onFailure("Error occurred.");
+            mExecuteResponseHandler.onFailure("Interrupted execution.");
         }
-        mFFmpegExecuteResponseHandler.onFinish();
-    }
-
-    @Override
-    public void publishUpdate(String update) {
-        publishProgress(update);
+        mExecuteResponseHandler.onFinish();
     }
 
     public boolean isProcessCompleted() {
