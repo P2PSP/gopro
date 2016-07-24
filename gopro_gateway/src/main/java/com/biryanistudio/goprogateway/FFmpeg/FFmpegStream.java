@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.security.NetworkSecurityPolicy;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.biryanistudio.FFmpegLibrary.Exception.FFmpegCommandAlreadyRunningException;
@@ -161,7 +160,7 @@ public class FFmpegStream extends Service {
                     Log.i(TAG, "FFmpeg execute onUploadReady");
                     Intent intent = new Intent();
                     intent.setAction("com.biryanistudio.goprogateway.UPLOAD_READY");
-                    LocalBroadcastManager.getInstance(FFmpegStream.this).sendBroadcast(intent);
+                    sendBroadcast(intent);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {

@@ -88,11 +88,11 @@ public class FFmpeg {
         boolean killLoadTask = mFFmpegLoadBinaryAsyncTask != null
                 && !mFFmpegLoadBinaryAsyncTask.isCancelled()
                 && mFFmpegLoadBinaryAsyncTask.cancel(true);
-        Log.i(TAG, "Load AsyncTask: " + killLoadTask);
+        Log.i(TAG, "Kill LoadAsyncTask: " + killLoadTask);
         boolean killExecuteTask = mFFmpegExecuteAsyncTask != null
                 && !mFFmpegExecuteAsyncTask.isCancelled()
                 && mFFmpegExecuteAsyncTask.cancel(true);
-        Log.i(TAG, "Execute AsyncTask: " + killExecuteTask);
+        Log.i(TAG, "Kill ExecuteAsyncTask: " + killExecuteTask);
         return killLoadTask && killExecuteTask;
     }
 }

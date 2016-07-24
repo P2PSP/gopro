@@ -4,9 +4,7 @@ import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +13,6 @@ import android.widget.TextView;
 
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
-import com.biryanistudio.goprogateway.R;
 
 /**
  * Created by sravan953 on 13/06/16.
@@ -24,18 +21,21 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     final private String TAG = getClass().getSimpleName();
     private TextView mTextLog;
     private Button mButtonStartStream;
-    private Button mButtonStartUpload;
+    private static Button mButtonStartUpload;
     private Button mButtonStopStream;
     private Intent mIntentStartStream;
     private Intent mIntentStartUpload;
 
-    private BroadcastReceiver mUploadReadyReceiver = new BroadcastReceiver() {
+    public static class UploadReadyReceiver extends BroadcastReceiver {
+        public UploadReadyReceiver() {
+        }
+
         @Override
         public void onReceive(Context context, Intent intent) {
             if(!mButtonStartUpload.isEnabled())
                 mButtonStartUpload.setEnabled(true);
         }
-    };
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,18 +61,10 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.biryanistudio.goprogateway.UPLOAD_READY");
-        LocalBroadcastManager.getInstance(getActivity())
-                .registerReceiver(mUploadReadyReceiver, intentFilter);
-    }
-
-    @Override
     public void onStop() {
         super.onStop();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mUploadReadyReceiver);
+        getActivity().stopService(mIntentStartStream);
+        getActivity().stopService(mIntentStartUpload);
     }
 
     @Override

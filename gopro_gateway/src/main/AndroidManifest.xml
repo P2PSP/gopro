@@ -25,6 +25,12 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name=".Fragment.GoProFragment$UploadReadyReceiver">
+            <intent-filter>
+                <action android:name="com.biryanistudio.goprogateway.UPLOAD_READY"/>
+            </intent-filter>
+        </receiver>
+
         <service android:name=".FFmpeg.FFmpegStream"
             android:process=":stream" />
         <service android:name=".FFmpeg.FFmpegUpload"
