@@ -7,10 +7,6 @@
 2. To get info about broadcasted streams:
 `ffprobe -show_streams udp://10.5.5.9:8554`
 
-Might have to experiment with the following workflows:
-- Step 1 > Step 2
-- Step 1 > Step 2 > Step 1 (mostly works)
-
 ### OUTPUT:
 > Input #0, mpegts, from 'udp://10.5.5.9:8554':
   Duration: N/A, start: 0.000000, bitrate: N/A
@@ -23,13 +19,7 @@ Might have to experiment with the following workflows:
 ### MAC:
 1. Start streaming - `HTTP GET: http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart`
 2. To get stream:
-`ffmpeg -codec:v:0 h264 -codec:a:1 aac -i udp://10.5.5.9:8554 output.mp4`
-
-
-Might have to experiment with the following workflows (file saved in /user):
-- Step 1 > Step 2
-- Step 1 > Step 2 > Step 1 (mostly works)
-
+`ffmpeg -i udp://10.5.5.9:8554 output.mp4`
 
 ### ANDROID:
 Library used - [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java)
