@@ -1,1 +1,1 @@
-include ':gopro_gateway'
+include ':gopro_gateway', ':FFmpegLibrary'

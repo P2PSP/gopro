@@ -1,181 +1,137 @@
 package com.biryanistudio.goprogateway.Fragment;
 
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
+import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
 import com.biryanistudio.goprogateway.R;
-import com.biryanistudio.goprogateway.UDPService;
-import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
-import com.github.hiteshsondhi88.libffmpeg.FFmpegExecuteResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.LoadBinaryResponseHandler;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegCommandAlreadyRunningException;
-import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedException;
 
-import java.io.IOException;
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.io.File;
 
 /**
  * Created by sravan953 on 13/06/16.
  */
 public class GoProFragment extends Fragment implements View.OnClickListener {
     final private String TAG = getClass().getSimpleName();
-    final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart";
+    private static boolean mAPIValid;
+    private String mAPIKey;
     private TextView mTextLog;
-    private Button mButtonStart;
-    private Button mButtonStop;
-    private FFmpeg mFfmpeg;
-    private Intent mUDPIntent;
+    private Button mButtonStartStream;
+    private static Button mButtonStartUpload;
+    private Button mButtonStopStream;
+    private Intent mIntentStartStream;
+    private Intent mIntentStartUpload;
 
-    final private String[] cmd = {"-i", "udp://:8554", "-codec:v:0", "copy", "-codec:a:1", "copy", "-preset", "veryfast", "/storage/emulated/0/output.mp4"};
+    public static class UploadReadyReceiver extends BroadcastReceiver {
+        public UploadReadyReceiver() {
+        }
 
-    @Override
-    public void onCreate (Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mUDPIntent = new Intent(getActivity(), UDPService.class);
-        loadFFMPEG();
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mAPIValid && !mButtonStartUpload.isEnabled())
+                mButtonStartUpload.setEnabled(true);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gopro, container, false);
         mTextLog = (TextView) view.findViewById(R.id.tv_log);
-        mButtonStart = (Button) view.findViewById(R.id.btn_start);
-        mButtonStart.setOnClickListener(this);
-        mButtonStop = (Button) view.findViewById(R.id.btn_stop);
-        mButtonStop.setOnClickListener(this);
+        mButtonStartStream = (Button) view.findViewById(R.id.btn_start_stream);
+        mButtonStartStream.setOnClickListener(this);
+        mButtonStartUpload = (Button) view.findViewById(R.id.btn_start_upload);
+        mButtonStartUpload.setOnClickListener(this);
+        mButtonStartUpload.setEnabled(false);
+        mButtonStopStream = (Button) view.findViewById(R.id.btn_stop_stream);
+        mButtonStopStream.setOnClickListener(this);
+        mButtonStopStream.setEnabled(false);
+
+        mIntentStartStream = new Intent(getActivity(), FFmpegStream.class);
+        mIntentStartUpload = new Intent(getActivity(), FFmpegUpload.class);
         return view;
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        checkAPIKey();
+        checkVideoFile();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        getActivity().stopService(mIntentStartStream);
+        getActivity().stopService(mIntentStartUpload);
+    }
+
+    @Override
     public void onClick(View view) {
-        if(view.getId() == R.id.btn_start) {
-            start();
-            mButtonStart.setEnabled(false);
-            mButtonStop.setEnabled(true);
-        }
-        else {
-            killFfmpeg();
-            mButtonStart.setEnabled(true);
-            mButtonStop.setEnabled(false);
-        }
-    }
-
-    private void start() {
-        new RequestStreamTask().execute();
-    }
-
-    private void startFfmpeg() {
-        try {
-            mFfmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
-                @Override
-                public void onStart() {
-                    Log.i(TAG, "ffmpeg execute onStart");
-                    mTextLog.append("\nffmpeg execute onStart");
-                }
-
-                @Override
-                public void onProgress(String message) {
-                    Log.i(TAG, message);
-                    mTextLog.append("\n" + message);
-                }
-
-                @Override
-                public void onFailure(String message) {
-                    Log.i(TAG, message);
-                    mTextLog.append("\n" + message);
-                }
-
-                @Override
-                public void onSuccess(String message) {
-                    Log.i(TAG, message);
-                    mTextLog.append("\n" + message);
-                }
-
-                @Override
-                public void onFinish() {
-                    Log.i(TAG, "ffmpeg execute onFinish");
-                    mTextLog.append("\nffmpeg execute onFinish");
-                }
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-            e.printStackTrace();
+        int id = view.getId();
+        switch (id) {
+            case R.id.btn_start_stream:
+                getActivity().startService(mIntentStartStream);
+                mButtonStartStream.setEnabled(false);
+                mButtonStopStream.setEnabled(true);
+                break;
+            case R.id.btn_start_upload:
+                getActivity().startService(mIntentStartUpload);
+                mButtonStartUpload.setEnabled(false);
+                break;
+            case R.id.btn_stop_stream:
+                getActivity().stopService(mIntentStartStream);
+                getActivity().stopService(mIntentStartUpload);
+                mButtonStartStream.setEnabled(true);
+                mButtonStartUpload.setEnabled(false);
+                mButtonStopStream.setEnabled(false);
+                break;
+            default:
+                break;
         }
     }
 
-    private void killFfmpeg() {
-        mFfmpeg.killRunningProcesses();
-        getActivity().stopService(mUDPIntent);
-        Log.i(TAG, "ffmpeg killRunningProcesses");
-        mTextLog.append("\nffmpeg killRunningProcesses");
-    }
-
-    private void loadFFMPEG() {
-        mFfmpeg = FFmpeg.getInstance(getActivity());
-        try {
-            mFfmpeg.loadBinary(new LoadBinaryResponseHandler() {
-                @Override
-                public void onStart() {
-                    Log.i(TAG, "ffmpeg loadBinary onStart");
-                    mTextLog.append("\nffmpeg loadBinary onStart");
-                }
-
-                @Override
-                public void onFailure() {
-                    Log.i(TAG, "ffmpeg loadBinary onFailure");
-                    mTextLog.append("\nffmpeg loadBinary onFailure");
-                }
-
-                @Override
-                public void onSuccess() {
-                    Log.i(TAG, "ffmpeg loadBinary onSuccess");
-                    mTextLog.append("\nffmpeg loadBinary onSuccess");
-                }
-
-                @Override
-                public void onFinish() {
-                    Log.i(TAG, "ffmpeg loadBinary onFinish");
-                    mTextLog.append("\nffmpeg loadBinary onFinish");
-                }
-            });
-        } catch (FFmpegNotSupportedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private class RequestStreamTask extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... voids) {
-            try {
-                OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder().url(GOPRO_STREAM_URL).build();
-                Response response = client.newCall(request).execute();
-                return response.body().string();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+    private void checkAPIKey() {
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getActivity());
+        mAPIKey = sharedPreferences.getString("YOUTUBE_API", null);
+        if (mAPIKey != null) {
+            if (mAPIKey.length() == 19) {
+                mAPIValid = true;
+                mIntentStartUpload.putExtra("YOUTUBE_API", mAPIKey);
+                return;
             }
         }
+        mAPIValid = false;
+        Toast.makeText(getActivity(), "To livestream to YouTube, " +
+                "please enter a valid YouTube API key.", Toast.LENGTH_LONG).show();
+    }
 
-        @Override
-        protected void onPostExecute (String result) {
-            mTextLog.append("\n"+result);
-            if(result.equalsIgnoreCase("null")) {
-                mTextLog.append("\n Please try again");
+    public boolean checkVideoFile() {
+        File videoFile = new File(Environment.getExternalStorageDirectory(), "output.avi");
+        if(videoFile.exists()) {
+            Log.i(TAG, "Video file exists, deleting.");
+            if(videoFile.delete()) {
+                Log.i(TAG, "Video file deleted.");
+                return true;
             } else {
-                getActivity().startService(mUDPIntent);
-                startFfmpeg();
+                Log.i(TAG, "Could not delete video file.");
+                return false;
             }
         }
+        return true;
     }
 }

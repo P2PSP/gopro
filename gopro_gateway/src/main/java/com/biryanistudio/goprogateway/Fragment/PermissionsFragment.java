@@ -36,27 +36,30 @@ public class PermissionsFragment extends Fragment implements View.OnClickListene
     @Override
     public void onStart() {
         super.onStart();
-        checkAndObtainPermissions();
+        checkPermissions();
     }
 
     @Override
     public void onClick(View view) {
         if(view.getId() == R.id.btn_req_permissions)
-            checkAndObtainPermissions();
+            checkPermissions();
         else
             getFragmentManager().beginTransaction().replace(R.id.container, new GoProFragment()).commit();
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void checkAndObtainPermissions() {
+    private void checkPermissions() {
         int permissionCheck1 = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
         int permissionCheck2 = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permissionCheck1 == PackageManager.PERMISSION_GRANTED && permissionCheck2 == PackageManager.PERMISSION_GRANTED)
             getFragmentManager().beginTransaction().replace(R.id.container, new GoProFragment()).commit();
         else {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE}, 953);
+            obtainPermissions();
         }
+    }
+
+    private void obtainPermissions() {
+        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE}, 953);
     }
 
     @Override
