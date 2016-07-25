@@ -26,9 +26,7 @@ public class FFmpegUpload extends Service {
     final private String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
 
-    final private String YOUTUBE_KEY = "x5v1-uqey-h9qf-1fa3";
-    final private String[] cmd = {"-re", "-i", "/storage/emulated/0/output.avi",
-            "-ar", "44100", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
+    private String YOUTUBE_KEY;
 
     @Nullable
     @Override
@@ -38,6 +36,8 @@ public class FFmpegUpload extends Service {
 
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
+        Log.i(TAG, "onStartCommand");
+        YOUTUBE_KEY = intent.getStringExtra("YOUTUBE_API");
         loadFFMPEG();
         Notification notification = new Notification.Builder(this)
                 .setContentTitle("Upload")
@@ -51,8 +51,8 @@ public class FFmpegUpload extends Service {
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
-        if(mFFmpeg.isFFmpegCommandRunning())
-            mFFmpeg.killRunningProcesses();
+        if(mFFmpeg.isFFmpegCommandRunning())Log.i(TAG, "Killing process: " +
+                mFFmpeg.killRunningProcesses());
     }
 
     public void loadFFMPEG() {
@@ -72,12 +72,12 @@ public class FFmpegUpload extends Service {
                 @Override
                 public void onSuccess() {
                     Log.i(TAG, "FFmpeg loadBinary onSuccess");
+                    setCellularAsDefault();
                 }
 
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "FFmpeg loadBinary onFinish");
-                    setCellularAsDefault();
                 }
             });
         } catch (FFmpegNotSupportedException e) {
@@ -104,6 +104,8 @@ public class FFmpegUpload extends Service {
 
     private void executeCmd() {
         try {
+            String[] cmd = {"-re", "-i", "/storage/emulated/0/output.avi",
+                    "-ar", "44100", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
             mFFmpeg.execute(cmd, new ExecuteResponseHandler() {
                 @Override
                 public void onStart() {

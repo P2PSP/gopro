@@ -68,12 +68,11 @@ public class FFmpegStream extends Service {
         Log.i(TAG, "onDestroy");
         if(mTimer != null) {
             Log.i(TAG, "Clearing timer.");
-            mTimer.purge();
             mTimer.cancel();
+            mTimer.purge();
         }
-        if(mFFmpeg.isFFmpegCommandRunning()) {
-            Log.i(TAG, "Killing process: " + mFFmpeg.killRunningProcesses());
-        }
+        if(mFFmpeg.isFFmpegCommandRunning())Log.i(TAG, "Killing process: " +
+                mFFmpeg.killRunningProcesses());
     }
 
     private void loadFFMPEG() {
@@ -114,10 +113,9 @@ public class FFmpegStream extends Service {
             @Override
             public void onAvailable(Network network) {
                 Log.i(TAG, "WIFI AVAILABLE");
-                if (connectivityManager.bindProcessToNetwork(network))
-                    new RequestStreamTask().execute();
-                else
-                    Log.i(TAG, "Could not bind to WIFI.");
+                if (connectivityManager.bindProcessToNetwork(network)) new RequestStreamTask()
+                        .execute();
+                else Log.i(TAG, "Could not bind to WIFI.");
             }
 
             @Override

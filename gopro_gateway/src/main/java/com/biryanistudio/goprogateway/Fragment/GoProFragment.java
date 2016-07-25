@@ -4,21 +4,31 @@ import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
+import com.biryanistudio.goprogateway.R;
+
+import java.io.File;
 
 /**
  * Created by sravan953 on 13/06/16.
  */
 public class GoProFragment extends Fragment implements View.OnClickListener {
     final private String TAG = getClass().getSimpleName();
+    private static boolean mAPIValid;
+    private String mAPIKey;
     private TextView mTextLog;
     private Button mButtonStartStream;
     private static Button mButtonStartUpload;
@@ -32,14 +42,9 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(!mButtonStartUpload.isEnabled())
+            if (mAPIValid && !mButtonStartUpload.isEnabled())
                 mButtonStartUpload.setEnabled(true);
         }
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -61,6 +66,13 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        checkAPIKey();
+        checkVideoFile();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         getActivity().stopService(mIntentStartStream);
@@ -78,6 +90,7 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btn_start_upload:
                 getActivity().startService(mIntentStartUpload);
+                mButtonStartUpload.setEnabled(false);
                 break;
             case R.id.btn_stop_stream:
                 getActivity().stopService(mIntentStartStream);
@@ -88,7 +101,37 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
                 break;
             default:
                 break;
-
         }
+    }
+
+    private void checkAPIKey() {
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getActivity());
+        mAPIKey = sharedPreferences.getString("YOUTUBE_API", null);
+        if (mAPIKey != null) {
+            if (mAPIKey.length() == 19) {
+                mAPIValid = true;
+                mIntentStartUpload.putExtra("YOUTUBE_API", mAPIKey);
+                return;
+            }
+        }
+        mAPIValid = false;
+        Toast.makeText(getActivity(), "To livestream to YouTube, " +
+                "please enter a valid YouTube API key.", Toast.LENGTH_LONG).show();
+    }
+
+    public boolean checkVideoFile() {
+        File videoFile = new File(Environment.getExternalStorageDirectory(), "output.avi");
+        if(videoFile.exists()) {
+            Log.i(TAG, "Video file exists, deleting.");
+            if(videoFile.delete()) {
+                Log.i(TAG, "Video file deleted.");
+                return true;
+            } else {
+                Log.i(TAG, "Could not delete video file.");
+                return false;
+            }
+        }
+        return true;
     }
 }

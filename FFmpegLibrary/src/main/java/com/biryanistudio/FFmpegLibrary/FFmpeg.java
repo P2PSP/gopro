@@ -1,7 +1,6 @@
 package com.biryanistudio.FFmpegLibrary;
 
 import android.content.Context;
-import android.os.Environment;
 import android.util.Log;
 
 import com.biryanistudio.FFmpegLibrary.AsyncTask.FFmpegExecuteAsyncTask;
@@ -10,8 +9,6 @@ import com.biryanistudio.FFmpegLibrary.Exception.FFmpegCommandAlreadyRunningExce
 import com.biryanistudio.FFmpegLibrary.Exception.FFmpegNotSupportedException;
 import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
-
-import java.io.File;
 
 public class FFmpeg {
     final private String TAG = getClass().getSimpleName();
@@ -27,21 +24,6 @@ public class FFmpeg {
     public static FFmpeg getInstance(Context context) {
         if (mInstance == null) mInstance = new FFmpeg(context);
         return mInstance;
-    }
-
-    public boolean checkVideoFile() {
-        File videoFile = new File(Environment.getExternalStorageDirectory(), "output.avi");
-        if(videoFile.exists()) {
-            Log.i(TAG, "Video file exists, deleting.");
-            if(videoFile.delete()) {
-                Log.i(TAG, "Video file deleted.");
-                return true;
-            } else {
-                Log.i(TAG, "Could not delete video file.");
-                return false;
-            }
-        }
-        return true;
     }
 
     public void loadBinary(LoadBinaryResponseHandler loadBinaryResponseHandler)
@@ -67,7 +49,7 @@ public class FFmpeg {
             String[] ffmpegBinaryPath = new String[]{FileUtils.getFFmpegPath(mContext)};
             command = concatenate(ffmpegBinaryPath, command);
             mFFmpegExecuteAsyncTask = new FFmpegExecuteAsyncTask(executeResponseHandler);
-            if(checkVideoFile()) mFFmpegExecuteAsyncTask.execute(command);
+            mFFmpegExecuteAsyncTask.execute(command);
         } else {
             throw new IllegalArgumentException("shell command cannot be empty");
         }
