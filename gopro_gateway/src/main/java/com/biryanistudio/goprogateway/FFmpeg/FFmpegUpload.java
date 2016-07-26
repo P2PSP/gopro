@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -92,8 +93,18 @@ public class FFmpegUpload extends Service {
             @Override
             public void onAvailable (Network network) {
                 Log.i(TAG, "CELLULAR AVAILABLE");
-                connectivityManager.bindProcessToNetwork(network);
-                executeCmd();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (connectivityManager.bindProcessToNetwork(network)) {
+                        executeCmd();
+                        return;
+                    }
+                } else {
+                    if(ConnectivityManager.setProcessDefaultNetwork(network)) {
+                        executeCmd();
+                        return;
+                    }
+                }
+                Log.i(TAG, "Could not bind to CELLULAR.");
             }
 
             @Override
