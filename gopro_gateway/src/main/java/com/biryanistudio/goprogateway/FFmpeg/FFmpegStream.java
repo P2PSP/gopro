@@ -1,6 +1,5 @@
 package com.biryanistudio.goprogateway.FFmpeg;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
@@ -52,7 +51,9 @@ public class FFmpegStream extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
-        NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
+        }
         loadFFMPEG();
         Notification notification = new Notification.Builder(this)
                 .setContentTitle("Stream")
@@ -109,13 +110,21 @@ public class FFmpegStream extends Service {
         final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
         connectivityManager.requestNetwork(wifiNetworkReq, new ConnectivityManager.NetworkCallback() {
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
             @Override
             public void onAvailable(Network network) {
                 Log.i(TAG, "WIFI AVAILABLE");
-                if (connectivityManager.bindProcessToNetwork(network)) new RequestStreamTask()
-                        .execute();
-                else Log.i(TAG, "Could not bind to WIFI.");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (connectivityManager.bindProcessToNetwork(network)) {
+                        new RequestStreamTask().execute();
+                        return;
+                    }
+                } else {
+                    if(ConnectivityManager.setProcessDefaultNetwork(network)) {
+                        new RequestStreamTask().execute();
+                        return;
+                    }
+                }
+                Log.i(TAG, "Could not bind to WIFI.");
             }
 
             @Override
