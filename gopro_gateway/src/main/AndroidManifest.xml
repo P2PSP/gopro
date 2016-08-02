@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
-        <activity android:name=".MainActivity" >
+        <activity android:name=".Activity.MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,12 +25,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".SettingsActivity"
+        <activity android:name=".Activity.SettingsActivity"
                   android:label="@string/app_name" />
 
-        <receiver android:name=".Fragment.GoProFragment$UploadReadyReceiver">
+        <receiver android:name=".Fragment.GoProFragment$ProgressReceiver">
             <intent-filter>
                 <action android:name="com.biryanistudio.goprogateway.UPLOAD_READY"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.biryanistudio.goprogateway.TEXT_LOG"/>
             </intent-filter>
         </receiver>
 

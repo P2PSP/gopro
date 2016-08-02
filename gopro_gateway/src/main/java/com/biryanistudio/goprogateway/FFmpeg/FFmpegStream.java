@@ -10,7 +10,9 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.security.NetworkSecurityPolicy;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -23,6 +25,7 @@ import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 import com.biryanistudio.goprogateway.R;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
@@ -40,7 +43,6 @@ public class FFmpegStream extends Service {
     final private String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
     private Timer mTimer;
-    final private String[] CMD = {"-i", "udp://:8554", "/storage/emulated/0/output.avi"};
 
     @Nullable
     @Override
@@ -54,26 +56,44 @@ public class FFmpegStream extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
         }
+        showNotification();
         loadFFMPEG();
-        Notification notification = new Notification.Builder(this)
-                .setContentTitle("Stream")
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setOngoing(true)
-                .build();
-        startForeground(953, notification);
         return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
-        if(mTimer != null) {
+        if (mTimer != null) {
             Log.i(TAG, "Clearing timer.");
             mTimer.cancel();
             mTimer.purge();
         }
-        if(mFFmpeg.isFFmpegCommandRunning())Log.i(TAG, "Killing process: " +
+        if (mFFmpeg.isFFmpegCommandRunning()) Log.i(TAG, "Killing process: " +
                 mFFmpeg.killRunningProcesses());
+    }
+
+    private void showNotification() {
+        Notification notification = new Notification.Builder(this)
+                .setContentTitle("Stream")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setOngoing(true)
+                .build();
+        startForeground(953, notification);
+    }
+
+    public String[] getExecCmd() {
+        int videoID = PreferenceManager.getDefaultSharedPreferences(this)
+                .getInt("SAVE_FILE_ID", 1);
+        File goproFolder = new File(Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "GoPro Gateway");
+        if(!goproFolder.exists()) {
+            Log.i(TAG, "Folder not found, creating.");
+            goproFolder.mkdir();
+        }
+        String path = goproFolder.getPath() + "GoPro_" + videoID;
+        String[] cmd = {"-i", "udp://:8554", path};
+        return cmd;
     }
 
     private void loadFFMPEG() {
@@ -119,7 +139,7 @@ public class FFmpegStream extends Service {
                         return;
                     }
                 } else {
-                    if(ConnectivityManager.setProcessDefaultNetwork(network)) {
+                    if (ConnectivityManager.setProcessDefaultNetwork(network)) {
                         new RequestStreamTask().execute();
                         return;
                     }
@@ -136,7 +156,7 @@ public class FFmpegStream extends Service {
 
     private void executeCmd() {
         try {
-            mFFmpeg.execute(CMD, new ExecuteResponseHandler() {
+            mFFmpeg.execute(getExecCmd(), new ExecuteResponseHandler() {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg execute onStart");

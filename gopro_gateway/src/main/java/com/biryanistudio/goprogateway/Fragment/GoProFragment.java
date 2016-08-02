@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +17,6 @@ import android.widget.Toast;
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
 import com.biryanistudio.goprogateway.R;
-
-import java.io.File;
 
 /**
  * Created by sravan953 on 13/06/16.
@@ -36,14 +32,18 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     private Intent mIntentStartStream;
     private Intent mIntentStartUpload;
 
-    public static class UploadReadyReceiver extends BroadcastReceiver {
-        public UploadReadyReceiver() {
+    public static class ProgressReceiver extends BroadcastReceiver {
+        public ProgressReceiver() {
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mAPIValid && !mButtonStartUpload.isEnabled())
-                mButtonStartUpload.setEnabled(true);
+            if(intent.getAction() == "com.biryanistudio.goprogateway.UPLOAD_READY") {
+                if (mAPIValid && !mButtonStartUpload.isEnabled())
+                    mButtonStartUpload.setEnabled(true);
+            } else if(intent.getAction() == "com.biryanistudio.goprogateway.TEXT_LOG") {
+
+            }
         }
     }
 
@@ -69,7 +69,6 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     public void onStart() {
         super.onStart();
         checkAPIKey();
-        checkVideoFile();
     }
 
     @Override
@@ -118,20 +117,5 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         mAPIValid = false;
         Toast.makeText(getActivity(), "To livestream to YouTube, " +
                 "please enter a valid YouTube API key.", Toast.LENGTH_LONG).show();
-    }
-
-    public boolean checkVideoFile() {
-        File videoFile = new File(Environment.getExternalStorageDirectory(), "output.avi");
-        if(videoFile.exists()) {
-            Log.i(TAG, "Video file exists, deleting.");
-            if(videoFile.delete()) {
-                Log.i(TAG, "Video file deleted.");
-                return true;
-            } else {
-                Log.i(TAG, "Could not delete video file.");
-                return false;
-            }
-        }
-        return true;
     }
 }

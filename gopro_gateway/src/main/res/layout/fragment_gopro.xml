@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context="com.biryanistudio.goprogateway.MainActivity" >
+    tools:context=".Activity.MainActivity" >
 
     <RelativeLayout
         android:layout_width="match_parent"

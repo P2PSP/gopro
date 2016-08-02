@@ -1,4 +1,4 @@
-package com.biryanistudio.goprogateway;
+package com.biryanistudio.goprogateway.Activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.biryanistudio.goprogateway.Fragment.WifiFragment;
+import com.biryanistudio.goprogateway.R;
 
 public class MainActivity extends AppCompatActivity {
 

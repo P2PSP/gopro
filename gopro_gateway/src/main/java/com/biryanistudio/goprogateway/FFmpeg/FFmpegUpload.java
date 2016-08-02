@@ -36,7 +36,7 @@ public class FFmpegUpload extends Service {
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
         YOUTUBE_KEY = intent.getStringExtra("YOUTUBE_API");
         loadFFMPEG();
@@ -52,7 +52,7 @@ public class FFmpegUpload extends Service {
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
-        if(mFFmpeg.isFFmpegCommandRunning())Log.i(TAG, "Killing process: " +
+        if (mFFmpeg.isFFmpegCommandRunning()) Log.i(TAG, "Killing process: " +
                 mFFmpeg.killRunningProcesses());
     }
 
@@ -91,7 +91,7 @@ public class FFmpegUpload extends Service {
         final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
         connectivityManager.requestNetwork(cellularNetworkReq, new ConnectivityManager.NetworkCallback() {
             @Override
-            public void onAvailable (Network network) {
+            public void onAvailable(Network network) {
                 Log.i(TAG, "CELLULAR AVAILABLE");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (connectivityManager.bindProcessToNetwork(network)) {
@@ -99,7 +99,7 @@ public class FFmpegUpload extends Service {
                         return;
                     }
                 } else {
-                    if(ConnectivityManager.setProcessDefaultNetwork(network)) {
+                    if (ConnectivityManager.setProcessDefaultNetwork(network)) {
                         executeCmd();
                         return;
                     }
@@ -108,10 +108,11 @@ public class FFmpegUpload extends Service {
             }
 
             @Override
-            public void onLost (Network network) {
+            public void onLost(Network network) {
                 Log.i(TAG, "CELLULAR LOST");
             }
-        });}
+        });
+    }
 
     private void executeCmd() {
         try {

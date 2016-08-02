@@ -57,10 +57,10 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if(view.getId() == R.id.btn_connect)
+        if (view.getId() == R.id.btn_connect)
             startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
         else {
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 getFragmentManager().beginTransaction().replace(R.id.container, new PermissionsFragment()).commit();
             else
                 getFragmentManager().beginTransaction().replace(R.id.container, new GoProFragment()).commit();
