@@ -25,7 +25,7 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     final private String TAG = getClass().getSimpleName();
     private static boolean mAPIValid;
     private String mAPIKey;
-    private TextView mTextLog;
+    private static TextView mTextLog;
     private Button mButtonStartStream;
     private static Button mButtonStartUpload;
     private Button mButtonStopStream;
@@ -38,11 +38,13 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction() == "com.biryanistudio.goprogateway.UPLOAD_READY") {
-                if (mAPIValid && !mButtonStartUpload.isEnabled())
+            if (intent.getAction() == "com.biryanistudio.goprogateway.UPLOAD_READY") {
+                if (mAPIValid && !mButtonStartUpload.isEnabled()) {
                     mButtonStartUpload.setEnabled(true);
-            } else if(intent.getAction() == "com.biryanistudio.goprogateway.TEXT_LOG") {
-
+                    mTextLog.append("\nLive stream ready to upload to YouTube...");
+                }
+            } else if (intent.getAction() == "com.biryanistudio.goprogateway.TEXT_LOG") {
+                mTextLog.append("\n" + intent.getStringExtra("TEXT_LOG"));
             }
         }
     }

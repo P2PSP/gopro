@@ -26,9 +26,4 @@ public class ExecuteResponseHandler implements IFFmpegExecuteResponseHandler {
     public void onFailure(String message) {
 
     }
-
-    @Override
-    public void onUploadReady() {
-
-    }
 }

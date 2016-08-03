@@ -10,9 +10,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.security.NetworkSecurityPolicy;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -23,9 +21,9 @@ import com.biryanistudio.FFmpegLibrary.FFmpeg;
 import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 import com.biryanistudio.goprogateway.R;
+import com.biryanistudio.goprogateway.VideoFileHelper;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
@@ -71,6 +69,7 @@ public class FFmpegStream extends Service {
         }
         if (mFFmpeg.isFFmpegCommandRunning()) Log.i(TAG, "Killing process: " +
                 mFFmpeg.killRunningProcesses());
+        super.onDestroy();
     }
 
     private void showNotification() {
@@ -83,16 +82,7 @@ public class FFmpegStream extends Service {
     }
 
     public String[] getExecCmd() {
-        int videoID = PreferenceManager.getDefaultSharedPreferences(this)
-                .getInt("SAVE_FILE_ID", 1);
-        File goproFolder = new File(Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "GoPro Gateway");
-        if(!goproFolder.exists()) {
-            Log.i(TAG, "Folder not found, creating.");
-            goproFolder.mkdir();
-        }
-        String path = goproFolder.getPath() + "GoPro_" + videoID;
-        String[] cmd = {"-i", "udp://:8554", path};
+        String[] cmd = {"-i", "udp://:8554", VideoFileHelper.getPath(this)};
         return cmd;
     }
 
@@ -103,16 +93,19 @@ public class FFmpegStream extends Service {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg loadBinary onStart");
+                    sendProgressBroadcast("Attempting to load FFmpeg binary...");
                 }
 
                 @Override
                 public void onFailure() {
                     Log.i(TAG, "FFmpeg loadBinary onFailure");
+                    sendProgressBroadcast("Failure while loading FFmpeg binary.");
                 }
 
                 @Override
                 public void onSuccess() {
                     Log.i(TAG, "FFmpeg loadBinary onSuccess");
+                    sendProgressBroadcast("Successfully loaded FFmpeg binary...");
                     bindPortOnWifi();
                 }
 
@@ -127,8 +120,10 @@ public class FFmpegStream extends Service {
     }
 
     private void bindPortOnWifi() {
-        final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
+        final ConnectivityManager connectivityManager = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
         connectivityManager.requestNetwork(wifiNetworkReq, new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
@@ -145,11 +140,13 @@ public class FFmpegStream extends Service {
                     }
                 }
                 Log.i(TAG, "Could not bind to WIFI.");
+                sendProgressBroadcast("Oops, something went wrong!");
             }
 
             @Override
             public void onLost(Network network) {
                 Log.i(TAG, "WIFI LOST");
+                sendProgressBroadcast("WiFi connection lost...");
             }
         });
     }
@@ -160,34 +157,33 @@ public class FFmpegStream extends Service {
                 @Override
                 public void onStart() {
                     Log.i(TAG, "FFmpeg execute onStart");
+                    sendProgressBroadcast("FFmpeg command executing...");
                 }
 
                 @Override
                 public void onProgress(String message) {
                     Log.i(TAG, message);
+                    if (message.contains("Press [q]")) {
+                        Log.i(TAG, "FFmpeg execute onUploadReady");
+                        sendUploadReadyBroadcast();
+                    }
                 }
 
                 @Override
                 public void onFailure(String message) {
                     Log.i(TAG, message);
+                    sendProgressBroadcast("FFmpeg command execution terminated.");
                 }
 
                 @Override
                 public void onSuccess(String message) {
                     Log.i(TAG, message);
+                    sendProgressBroadcast("FFmpeg command successfully executed.");
                 }
 
                 @Override
                 public void onFinish() {
                     Log.i(TAG, "FFmpeg execute onFinish");
-                }
-
-                @Override
-                public void onUploadReady() {
-                    Log.i(TAG, "FFmpeg execute onUploadReady");
-                    Intent intent = new Intent();
-                    intent.setAction("com.biryanistudio.goprogateway.UPLOAD_READY");
-                    sendBroadcast(intent);
                 }
             });
         } catch (FFmpegCommandAlreadyRunningException e) {
@@ -195,11 +191,25 @@ public class FFmpegStream extends Service {
         }
     }
 
+    private void sendUploadReadyBroadcast() {
+        Intent intent = new Intent();
+        intent.setAction("com.biryanistudio.goprogateway.UPLOAD_READY");
+        sendBroadcast(intent);
+    }
+
+    private void sendProgressBroadcast(String message) {
+        Intent intent = new Intent();
+        intent.setAction("com.biryanistudio.goprogateway.TEXT_LOG");
+        intent.putExtra("TEXT_LOG", message);
+        sendBroadcast(intent);
+    }
+
     private class RequestStreamTask extends AsyncTask<Void, Void, String> {
         final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart";
 
         @Override
         protected String doInBackground(Void... voids) {
+            sendProgressBroadcast("Requesting GoPro device to start live stream...");
             try {
                 URL url = new URL(GOPRO_STREAM_URL);
                 URLConnection urlConnection = url.openConnection();
@@ -214,9 +224,10 @@ public class FFmpegStream extends Service {
 
         @Override
         protected void onPostExecute(String result) {
-            if (result == null)
+            if (result == null) {
                 Log.i(TAG, "null result");
-            else {
+                sendProgressBroadcast("Oops, something went wrong!");
+            } else {
                 Log.i(TAG, result);
                 executeCmd();
                 keepAlive();
@@ -230,7 +241,8 @@ public class FFmpegStream extends Service {
             int UDP_PORT = 8554;
             byte[] message = "_GPHD_:0:0:2:0.000000".getBytes();
             InetAddress address = InetAddress.getByName(UDP_IP);
-            final DatagramPacket packet = new DatagramPacket(message, message.length, address, UDP_PORT);
+            final DatagramPacket packet = new DatagramPacket(message, message.length, address,
+                    UDP_PORT);
             final DatagramSocket socket = new DatagramSocket();
             TimerTask timerTask = new TimerTask() {
                 @Override
