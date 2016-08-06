@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,32 +90,60 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
 
     private class CheckStatusTask extends AsyncTask<Void, Void, String> {
         final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/status";
+        final private String SJCAM_STREAM_URL = "http://192.168.1.254/?custom=1&cmd=3014";
 
         @Override
         protected String doInBackground(Void... voids) {
+            if(!checkGoProDevice()) {
+                if(checkSJCAMDevice()) return "SJCAM";
+                return null;
+            }
+            return "GOPRO";
+        }
+
+        private boolean checkGoProDevice() {
             try {
-                URL url = new URL(GOPRO_STREAM_URL);
-                URLConnection urlConnection = url.openConnection();
-                urlConnection.setConnectTimeout(2000);
+                URL goproURL = new URL(GOPRO_STREAM_URL);
+                URLConnection urlConnection = goproURL.openConnection();
+                urlConnection.setConnectTimeout(500);
                 InputStreamReader is = new InputStreamReader(urlConnection.getInputStream());
                 BufferedReader br = new BufferedReader(is);
-                return br.readLine();
+                return br.readLine().contains("status");
             } catch (IOException e) {
                 e.printStackTrace();
-                return null;
+                return false;
+            }
+        }
+
+        private boolean checkSJCAMDevice() {
+            try {
+                URL sjcamURL = new URL(SJCAM_STREAM_URL);
+                URLConnection urlConnection = sjcamURL.openConnection();
+                urlConnection.setConnectTimeout(100);
+                InputStreamReader is = new InputStreamReader(urlConnection.getInputStream());
+                BufferedReader br = new BufferedReader(is);
+                String line = "";
+                while((line = br.readLine()) != null) {
+                    if(line.contains("<Function>")) return true;
+                }
+                return false;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
             }
         }
 
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                if (result.contains("status")) {
-                    Log.i(TAG, "Connected to GoPro device.");
-                    mButtonProceed.setEnabled(true);
-                    return;
-                }
+                PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
+                        .putString("DEVICE_TYPE", result).commit();
+                if (result.equals("GOPRO")) Log.i(TAG, "Connected to GoPro device.");
+                else if(result.equals("SJCAM")) Log.i(TAG, "Connected to SJCAM device.");
+                mButtonProceed.setEnabled(true);
+                return;
             }
-            Log.i(TAG, "Not connected to GoPro device.");
+            Log.i(TAG, "Not connected to any device.");
             mButtonProceed.setEnabled(false);
         }
     }

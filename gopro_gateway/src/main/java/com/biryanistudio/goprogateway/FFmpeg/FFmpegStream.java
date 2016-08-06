@@ -41,6 +41,7 @@ public class FFmpegStream extends Service {
     final private String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
     private Timer mTimer;
+    private String DEVICE_TYPE;
 
     @Nullable
     @Override
@@ -51,6 +52,7 @@ public class FFmpegStream extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
+        DEVICE_TYPE = intent.getStringExtra("DEVICE_TYPE");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
         }
@@ -82,10 +84,18 @@ public class FFmpegStream extends Service {
     }
 
     public String[] getExecCmd() {
-        String[] cmd = {"-i", "udp://:8554", VideoFileHelper.getPath(this)};
+        String cmd[];
+        if (DEVICE_TYPE.equals("GOPRO")) cmd = new String[]{"-i", "udp://:8554",
+                VideoFileHelper.getPath(this, DEVICE_TYPE)};
+        else cmd = new String[]{"-i", "rtsp://192.168.1.254/sjcam.mov",
+                VideoFileHelper.getPath(this, DEVICE_TYPE)};
         return cmd;
     }
 
+    /**
+     * Attempts to load the FFmpeg binary from the app's Assets folder to the package specific data
+     * folder.
+     */
     private void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(this);
         try {
@@ -119,6 +129,10 @@ public class FFmpegStream extends Service {
         }
     }
 
+    /**
+     * Makes a NetworkRequest for a WiFi capable network. Callbacks binds this WiFi network once it
+     * is available to the current process.
+     */
     private void bindPortOnWifi() {
         final ConnectivityManager connectivityManager = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -128,19 +142,22 @@ public class FFmpegStream extends Service {
             @Override
             public void onAvailable(Network network) {
                 Log.i(TAG, "WIFI AVAILABLE");
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (connectivityManager.bindProcessToNetwork(network)) {
-                        new RequestStreamTask().execute();
-                        return;
+                if (DEVICE_TYPE.equals("GOPRO")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (connectivityManager.bindProcessToNetwork(network)) {
+                            new RequestStreamTask().execute();
+                            return;
+                        }
+                    } else {
+                        if (ConnectivityManager.setProcessDefaultNetwork(network)) {
+                            new RequestStreamTask().execute();
+                            return;
+                        }
                     }
-                } else {
-                    if (ConnectivityManager.setProcessDefaultNetwork(network)) {
-                        new RequestStreamTask().execute();
-                        return;
-                    }
+                    Log.i(TAG, "Could not bind to WIFI.");
+                    sendProgressBroadcast("Oops, something went wrong!");
                 }
-                Log.i(TAG, "Could not bind to WIFI.");
-                sendProgressBroadcast("Oops, something went wrong!");
+                executeCmd();
             }
 
             @Override

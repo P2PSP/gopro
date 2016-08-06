@@ -31,6 +31,7 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     private Button mButtonStopStream;
     private Intent mIntentStartStream;
     private Intent mIntentStartUpload;
+    private String DEVICE_TYPE;
 
     public static class ProgressReceiver extends BroadcastReceiver {
         public ProgressReceiver() {
@@ -50,6 +51,13 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        DEVICE_TYPE = (PreferenceManager.getDefaultSharedPreferences(getActivity()))
+                .getString("DEVICE_TYPE", "");
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gopro, container, false);
         mTextLog = (TextView) view.findViewById(R.id.tv_log);
@@ -61,9 +69,12 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         mButtonStopStream = (Button) view.findViewById(R.id.btn_stop_stream);
         mButtonStopStream.setOnClickListener(this);
         mButtonStopStream.setEnabled(false);
+        mTextLog.setText(DEVICE_TYPE);
 
         mIntentStartStream = new Intent(getActivity(), FFmpegStream.class);
+        mIntentStartStream.putExtra("DEVICE_TYPE", DEVICE_TYPE);
         mIntentStartUpload = new Intent(getActivity(), FFmpegUpload.class);
+        mIntentStartUpload.putExtra("DEVICE_TYPE", DEVICE_TYPE);
         return view;
     }
 
