@@ -1,10 +1,8 @@
 package com.biryanistudio.goprogateway.Fragment;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
@@ -41,7 +39,7 @@ public class PermissionsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
-        if(view.getId() == R.id.btn_req_permissions)
+        if (view.getId() == R.id.btn_req_permissions)
             checkPermissions();
         else
             getFragmentManager().beginTransaction().replace(R.id.container, new GoProFragment()).commit();
@@ -66,12 +64,12 @@ public class PermissionsFragment extends Fragment implements View.OnClickListene
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         if (requestCode == 953 && grantResults.length > 0) {
-            if(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 mLocPermission = true;
-            if(grantResults[1] == PackageManager.PERMISSION_GRANTED)
+            if (grantResults[1] == PackageManager.PERMISSION_GRANTED)
                 mStoragePermission = true;
         }
-        if(mLocPermission && mStoragePermission)
+        if (mLocPermission && mStoragePermission)
             mButtonProceed.setEnabled(true);
     }
 }

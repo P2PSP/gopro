@@ -1,10 +1,12 @@
-package com.biryanistudio.goprogateway;
+package com.biryanistudio.goprogateway.Activity;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
-public class SettingsActivity extends Activity {
+import com.biryanistudio.goprogateway.R;
+
+public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

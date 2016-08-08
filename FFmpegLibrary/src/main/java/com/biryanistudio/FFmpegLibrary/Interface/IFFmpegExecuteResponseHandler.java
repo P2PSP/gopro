@@ -12,6 +12,4 @@ public interface IFFmpegExecuteResponseHandler {
 
     void onFailure(String message);
 
-    void onUploadReady();
-
 }

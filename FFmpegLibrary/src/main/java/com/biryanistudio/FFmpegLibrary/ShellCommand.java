@@ -24,7 +24,6 @@ public class ShellCommand {
         while (!isProcessCompleted()) {
             try {
                 while ((line = reader.readLine()) != null) {
-                    if(line.contains("Press [q]")) executeResponseHandler.onUploadReady();
                     executeResponseHandler.onProgress(line);
                 }
                 return true;

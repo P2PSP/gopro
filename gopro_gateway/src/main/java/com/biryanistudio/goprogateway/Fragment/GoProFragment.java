@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,8 +18,6 @@ import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
 import com.biryanistudio.goprogateway.R;
 
-import java.io.File;
-
 /**
  * Created by sravan953 on 13/06/16.
  */
@@ -29,22 +25,36 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     final private String TAG = getClass().getSimpleName();
     private static boolean mAPIValid;
     private String mAPIKey;
-    private TextView mTextLog;
+    private static TextView mTextLog;
     private Button mButtonStartStream;
     private static Button mButtonStartUpload;
     private Button mButtonStopStream;
     private Intent mIntentStartStream;
     private Intent mIntentStartUpload;
+    private String DEVICE_TYPE;
 
-    public static class UploadReadyReceiver extends BroadcastReceiver {
-        public UploadReadyReceiver() {
+    public static class ProgressReceiver extends BroadcastReceiver {
+        public ProgressReceiver() {
         }
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (mAPIValid && !mButtonStartUpload.isEnabled())
-                mButtonStartUpload.setEnabled(true);
+            if (intent.getAction() == "com.biryanistudio.goprogateway.UPLOAD_READY") {
+                if (mAPIValid && !mButtonStartUpload.isEnabled()) {
+                    mButtonStartUpload.setEnabled(true);
+                    mTextLog.append("\nLive stream ready to upload to YouTube...");
+                }
+            } else if (intent.getAction() == "com.biryanistudio.goprogateway.TEXT_LOG") {
+                mTextLog.append("\n" + intent.getStringExtra("TEXT_LOG"));
+            }
         }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        DEVICE_TYPE = (PreferenceManager.getDefaultSharedPreferences(getActivity()))
+                .getString("DEVICE_TYPE", "");
     }
 
     @Override
@@ -59,9 +69,12 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         mButtonStopStream = (Button) view.findViewById(R.id.btn_stop_stream);
         mButtonStopStream.setOnClickListener(this);
         mButtonStopStream.setEnabled(false);
+        mTextLog.setText(DEVICE_TYPE);
 
         mIntentStartStream = new Intent(getActivity(), FFmpegStream.class);
+        mIntentStartStream.putExtra("DEVICE_TYPE", DEVICE_TYPE);
         mIntentStartUpload = new Intent(getActivity(), FFmpegUpload.class);
+        mIntentStartUpload.putExtra("DEVICE_TYPE", DEVICE_TYPE);
         return view;
     }
 
@@ -69,7 +82,6 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     public void onStart() {
         super.onStart();
         checkAPIKey();
-        checkVideoFile();
     }
 
     @Override
@@ -118,20 +130,5 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         mAPIValid = false;
         Toast.makeText(getActivity(), "To livestream to YouTube, " +
                 "please enter a valid YouTube API key.", Toast.LENGTH_LONG).show();
-    }
-
-    public boolean checkVideoFile() {
-        File videoFile = new File(Environment.getExternalStorageDirectory(), "output.avi");
-        if(videoFile.exists()) {
-            Log.i(TAG, "Video file exists, deleting.");
-            if(videoFile.delete()) {
-                Log.i(TAG, "Video file deleted.");
-                return true;
-            } else {
-                Log.i(TAG, "Could not delete video file.");
-                return false;
-            }
-        }
-        return true;
     }
 }

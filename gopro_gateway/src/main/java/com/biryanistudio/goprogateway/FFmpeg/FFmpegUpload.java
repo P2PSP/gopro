@@ -19,6 +19,7 @@ import com.biryanistudio.FFmpegLibrary.FFmpeg;
 import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 import com.biryanistudio.goprogateway.R;
+import com.biryanistudio.goprogateway.VideoFileHelper;
 
 /**
  * Created by Sravan on 10-Jul-16.
@@ -26,8 +27,8 @@ import com.biryanistudio.goprogateway.R;
 public class FFmpegUpload extends Service {
     final private String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
-
     private String YOUTUBE_KEY;
+    private String DEVICE_TYPE;
 
     @Nullable
     @Override
@@ -36,8 +37,9 @@ public class FFmpegUpload extends Service {
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
+        DEVICE_TYPE = intent.getStringExtra("DEVICE_TYPE");
         YOUTUBE_KEY = intent.getStringExtra("YOUTUBE_API");
         loadFFMPEG();
         Notification notification = new Notification.Builder(this)
@@ -52,10 +54,14 @@ public class FFmpegUpload extends Service {
     @Override
     public void onDestroy() {
         Log.i(TAG, "onDestroy");
-        if(mFFmpeg.isFFmpegCommandRunning())Log.i(TAG, "Killing process: " +
+        if (mFFmpeg.isFFmpegCommandRunning()) Log.i(TAG, "Killing process: " +
                 mFFmpeg.killRunningProcesses());
     }
 
+    /**
+     * Attempts to load the FFmpeg binary from the app's Assets folder to the package specific data
+     * folder.
+     */
     public void loadFFMPEG() {
         mFFmpeg = FFmpeg.getInstance(this);
         try {
@@ -73,7 +79,7 @@ public class FFmpegUpload extends Service {
                 @Override
                 public void onSuccess() {
                     Log.i(TAG, "FFmpeg loadBinary onSuccess");
-                    setCellularAsDefault();
+                    bindCellular();
                 }
 
                 @Override
@@ -86,12 +92,18 @@ public class FFmpegUpload extends Service {
         }
     }
 
-    private void setCellularAsDefault() {
-        final ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
+    /**
+     * Makes a NetworkRequest for a cellular internet capable network. Callbacks binds this WiFi
+     * network once it is available to the current process.
+     */
+    private void bindCellular() {
+        final ConnectivityManager connectivityManager = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkRequest cellularNetworkReq = new NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR).build();
         connectivityManager.requestNetwork(cellularNetworkReq, new ConnectivityManager.NetworkCallback() {
             @Override
-            public void onAvailable (Network network) {
+            public void onAvailable(Network network) {
                 Log.i(TAG, "CELLULAR AVAILABLE");
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     if (connectivityManager.bindProcessToNetwork(network)) {
@@ -99,7 +111,7 @@ public class FFmpegUpload extends Service {
                         return;
                     }
                 } else {
-                    if(ConnectivityManager.setProcessDefaultNetwork(network)) {
+                    if (ConnectivityManager.setProcessDefaultNetwork(network)) {
                         executeCmd();
                         return;
                     }
@@ -108,14 +120,15 @@ public class FFmpegUpload extends Service {
             }
 
             @Override
-            public void onLost (Network network) {
+            public void onLost(Network network) {
                 Log.i(TAG, "CELLULAR LOST");
             }
-        });}
+        });
+    }
 
     private void executeCmd() {
         try {
-            String[] cmd = {"-re", "-i", "/storage/emulated/0/output.avi",
+            String[] cmd = {"-re", "-i", VideoFileHelper.getPath(this, DEVICE_TYPE),
                     "-ar", "44100", "-f", "flv", "rtmp://a.rtmp.youtube.com/live2/" + YOUTUBE_KEY};
             mFFmpeg.execute(cmd, new ExecuteResponseHandler() {
                 @Override
