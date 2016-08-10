@@ -2,7 +2,8 @@
 # GoPro Gateway | P2PSP
 
 ### ANDROID:
-Library used - Derivative of [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java)
+Library used - Derivative of [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java) 
+
 Authored by - [Hitesh Sondhi](https://github.com/hiteshsondhi88)
 
 - Add dependency: `compile 'com.writingminds:FFmpegAndroid:0.3.2'`
