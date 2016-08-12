@@ -12,7 +12,7 @@
 
 ## APP: HOW TO
 1. [Clone, compile](#compiling-on-android-studio) and run the app.
-2. [Get](https://github.com/sravan953/gopro#getting-your-youtube-secret-key) your YouTube secret key
+2. [Get](#getting-your-youtube-secret-key) your YouTube secret key
 3. Paste this secret key in the app, in the settings screen.
 4. Connect to a Hero 4 Silver/SJ5000x device.
 5. Grant requested permissions.
