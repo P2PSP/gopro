@@ -6,7 +6,7 @@
 
 ## ANDROID:
 - Library used is derived from [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java), authored by [hiteshsondhi88](https://github.com/hiteshsondhi88)
-- [Guide](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary/BUILD_GUIDE.md) on compiling ffmpeg yourself; so that you can always use the most up-to-date ffempg binaries in your app.
+- [Guide](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary/README.md) on compiling ffmpeg yourself; so that you can always use the most up-to-date ffempg binaries in your app.
 
 
 ### QUICKSTART ON ADDING FFMPEG-ANDROID-JAVA IN YOUR APP:
