@@ -21,7 +21,7 @@ export ANDROID_NDK=<path-to-your-extracted-ndk>/android-ndk-r12b
 ## STEP 2 -- BUILDING FFMPEG
 - Extract the ffmpeg binaries, rename the extracted folder as `ffmpeg` (if it isn't that already).
 - Place them inside the `sources` folder inside `android-ndk-r12b`.
-- Create a build script and set the configurable options. [Here]() is the script I used.
+- Create a build script and set the configurable options. [Here](https://github.com/sravan953/gopro/blob/master/FFmpegLibrary/BUILD_GUIDE/ffmpeg_build.sh) is the script I used.
 - Open a Terminal and cd (change directory) to the ffmpeg source directory ([easy way](http://osxdaily.com/2011/12/07/open-a-selected-finder-folder-in-a-new-terminal-window/)) and execute the script (in this case, my script is called `ffmpeg_build.sh`):
 ```
 ./ffmpeg_build.sh
