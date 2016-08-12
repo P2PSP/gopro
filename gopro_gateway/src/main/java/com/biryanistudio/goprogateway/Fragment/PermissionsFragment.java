@@ -24,9 +24,9 @@ public class PermissionsFragment extends Fragment implements View.OnClickListene
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_permissions, container, false);
-        mButtonPermissionsReq = (Button) view.findViewById(R.id.btn_req_permissions);
+        mButtonPermissionsReq = (Button) view.findViewById(R.id.button_req_permissions);
         mButtonPermissionsReq.setOnClickListener(this);
-        mButtonProceed = (Button) view.findViewById(R.id.btn_proceed);
+        mButtonProceed = (Button) view.findViewById(R.id.button_proceed);
         mButtonProceed.setOnClickListener(this);
         return view;
     }
@@ -39,17 +39,17 @@ public class PermissionsFragment extends Fragment implements View.OnClickListene
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.btn_req_permissions)
+        if (view.getId() == R.id.button_req_permissions)
             checkPermissions();
         else
-            getFragmentManager().beginTransaction().replace(R.id.container, new GoProFragment()).commit();
+            getFragmentManager().beginTransaction().replace(R.id.layout_container, new GoProFragment()).commit();
     }
 
     private void checkPermissions() {
         int permissionCheck1 = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
         int permissionCheck2 = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permissionCheck1 == PackageManager.PERMISSION_GRANTED && permissionCheck2 == PackageManager.PERMISSION_GRANTED)
-            getFragmentManager().beginTransaction().replace(R.id.container, new GoProFragment()).commit();
+            getFragmentManager().beginTransaction().replace(R.id.layout_container, new GoProFragment()).commit();
         else {
             obtainPermissions();
         }

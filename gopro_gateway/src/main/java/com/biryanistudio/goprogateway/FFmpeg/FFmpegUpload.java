@@ -25,7 +25,7 @@ import com.biryanistudio.goprogateway.VideoFileHelper;
  * Created by Sravan on 10-Jul-16.
  */
 public class FFmpegUpload extends Service {
-    final private String TAG = getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
     private String YOUTUBE_KEY;
     private String DEVICE_TYPE;

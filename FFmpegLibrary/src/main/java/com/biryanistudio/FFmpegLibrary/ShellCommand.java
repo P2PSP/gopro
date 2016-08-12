@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ShellCommand {
-    final private String TAG = getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
     public Process mProcess;
 
     public void run(String[] command) {

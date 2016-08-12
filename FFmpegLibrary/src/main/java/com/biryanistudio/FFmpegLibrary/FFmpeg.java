@@ -11,8 +11,8 @@ import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 
 public class FFmpeg {
-    final private String TAG = getClass().getSimpleName();
-    final private Context mContext;
+    private final String TAG = getClass().getSimpleName();
+    private final Context mContext;
     private FFmpegExecuteAsyncTask mFFmpegExecuteAsyncTask;
     private FFmpegLoadBinaryAsyncTask mFFmpegLoadBinaryAsyncTask;
     private static FFmpeg mInstance = null;

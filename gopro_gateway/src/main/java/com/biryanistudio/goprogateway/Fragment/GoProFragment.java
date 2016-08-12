@@ -22,7 +22,7 @@ import com.biryanistudio.goprogateway.R;
  * Created by sravan953 on 13/06/16.
  */
 public class GoProFragment extends Fragment implements View.OnClickListener {
-    final private String TAG = getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
     private static boolean mAPIValid;
     private String mAPIKey;
     private static TextView mTextLog;
@@ -60,13 +60,13 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_gopro, container, false);
-        mTextLog = (TextView) view.findViewById(R.id.tv_log);
-        mButtonStartStream = (Button) view.findViewById(R.id.btn_start_stream);
+        mTextLog = (TextView) view.findViewById(R.id.textview_log);
+        mButtonStartStream = (Button) view.findViewById(R.id.button_start_stream);
         mButtonStartStream.setOnClickListener(this);
-        mButtonStartUpload = (Button) view.findViewById(R.id.btn_start_upload);
+        mButtonStartUpload = (Button) view.findViewById(R.id.button_start_upload);
         mButtonStartUpload.setOnClickListener(this);
         mButtonStartUpload.setEnabled(false);
-        mButtonStopStream = (Button) view.findViewById(R.id.btn_stop_stream);
+        mButtonStopStream = (Button) view.findViewById(R.id.button_stop_stream);
         mButtonStopStream.setOnClickListener(this);
         mButtonStopStream.setEnabled(false);
         mTextLog.setText(DEVICE_TYPE);
@@ -95,16 +95,16 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     public void onClick(View view) {
         int id = view.getId();
         switch (id) {
-            case R.id.btn_start_stream:
+            case R.id.button_start_stream:
                 getActivity().startService(mIntentStartStream);
                 mButtonStartStream.setEnabled(false);
                 mButtonStopStream.setEnabled(true);
                 break;
-            case R.id.btn_start_upload:
+            case R.id.button_start_upload:
                 getActivity().startService(mIntentStartUpload);
                 mButtonStartUpload.setEnabled(false);
                 break;
-            case R.id.btn_stop_stream:
+            case R.id.button_stop_stream:
                 getActivity().stopService(mIntentStartStream);
                 getActivity().stopService(mIntentStartUpload);
                 mButtonStartStream.setEnabled(true);
