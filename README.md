@@ -11,22 +11,25 @@
 - SJCAM SJ5000x
 
 ## APP: HOW TO
-- [Clone, compile](#compiling-on-android-studio) and run the app.
-- Obtain your YouTube secret key:
-![](https://github.com/sravan953/gopro/blob/master/youtube_secret.gif)
-
-- Paste this secret key in the app, in the settings screen.
-- Connect to a Hero 4 Silver/SJ5000x device.
-- Grant requested permissions.
-- Enable cellular connection.
-- Begin obtaining the live stream. If you've entered a valid YouTube key, the upload button will enable once the app is ready, assuming you have a working cellular connection.
+1. [Clone, compile](#compiling-on-android-studio) and run the app.
+2. [Get](#getting-youtube-secret-key) your YouTube secret key
+3. Paste this secret key in the app, in the settings screen.
+4. Connect to a Hero 4 Silver/SJ5000x device.
+5. Grant requested permissions.
+6. Enable cellular connection.
+7. Begin obtaining the live stream. If you've entered a valid YouTube key, the upload button will enable once the app is ready, assuming you have a working cellular connection.
 
 ## COMPILING ON ANDROID STUDIO
-- Clone repo.
-- Open Android Studio.
-- `Open an existing Android Studio project` > `gopro`
-- `Build` > `Rebuild project`
-- `Run`
+1. Clone repo.
+2. Open Android Studio.
+3. `Open an existing Android Studio project` > `gopro`
+4. `Build` > `Rebuild project`
+5. `Run`
+
+## GETTING YOUR YOUTUBE SECRET KEY:
+1. Open YouTube Creator Studio (you need to have signed in).
+2. Click on 'Live Streaming'.
+3. Click on 'Reveal', and copy this key.
 
 ![](https://github.com/sravan953/gopro/blob/master/android_studio_compile.gif)
 
