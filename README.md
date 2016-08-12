@@ -1,11 +1,10 @@
 
 # GoPro Gateway | P2PSP
 
-### ANDROID:
-Library used - Derivative of [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java) 
+- [Here](https://github.com/sravan953/gopro/GSOC_DOC.md) is my GSoC documentation on what has been done/what has to be done.
+- [Library](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary) used is derived from [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java) , authored by [hiteshsondhi88](https://github.com/hiteshsondhi88).  
 
-Authored by - [Hitesh Sondhi](https://github.com/hiteshsondhi88)
-
+## QUICKSTART GUIDE TO USING hiteshsondhi88's LIBRARY:
 - Add dependency: `compile 'com.writingminds:FFmpegAndroid:0.3.2'`
 - Load FFmpeg binary:
 ```java
@@ -27,6 +26,6 @@ ffmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
 ## ANDROID N DEV PREVIEW 4 ISSUE
 > Cleartext HTTP traffic to 10.5.59 not permitted
 
-### WORKAROUND:
+#### WORKAROUND:
 From [StackOverflow](http://stackoverflow.com/questions/37866619/cleartext-http-traffic-to-myserver-com-not-permitted-on-android-n-preview), call:
 `NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();`
