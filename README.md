@@ -1,7 +1,7 @@
 
 # GoPro Gateway | P2PSP
 
-- [Here](https://github.com/sravan953/gopro/GSOC_DOC.md) is my GSoC documentation on what has been done/what has to be done.
+- [Here](https://github.com/sravan953/gopro/blob/master/GSOC_DOC.md) is my GSoC documentation on what has been done/what has to be done.
 - [Library](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary) used is derived from [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java) , authored by [hiteshsondhi88](https://github.com/hiteshsondhi88).  
 
 ## QUICKSTART GUIDE TO USING hiteshsondhi88's LIBRARY:
