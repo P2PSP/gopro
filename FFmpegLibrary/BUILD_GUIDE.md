@@ -27,7 +27,7 @@ export ANDROID_NDK=<path-to-your-extracted-ndk>/android-ndk-r12b
 ./ffmpeg_build.sh
 ```
 
-### UNDERSTANDING THE CONFIGURATION OPTIONS:
+#### UNDERSTANDING THE CONFIGURATION OPTIONS:
 - Open Terminal and cd to the ffmpeg source directory that you extracted earlier.
 - Run:
 ```
@@ -46,7 +46,7 @@ make install
 
 The `-j4` command specifies the number of cores that will be utilized. This depends on your system.
 
-### ABOUT THE MAKE COMMAND
+#### ABOUT THE MAKE COMMAND
 CMake is a platform-agnostic tool used for managing the build process. The easiest way to get it on your Mac is by getting [Homebrew](http://brew.sh/).
 
 ## STEP 4
