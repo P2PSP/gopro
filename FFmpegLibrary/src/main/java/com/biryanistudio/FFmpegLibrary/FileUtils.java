@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class FileUtils {
-    final private static String TAG = FileUtils.class.getSimpleName();
-    final public static String mFFmpegFileName = "arm";
+    private final static String TAG = FileUtils.class.getSimpleName();
+    public final static String mFFmpegFileName = "arm";
     private static final int DEFAULT_BUFFER_SIZE = 1024 * 4;
     private static final int EOF = -1;
 

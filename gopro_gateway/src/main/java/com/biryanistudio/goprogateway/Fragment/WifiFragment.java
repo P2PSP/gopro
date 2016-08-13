@@ -30,7 +30,7 @@ import java.net.URLConnection;
  * Created by sravan953 on 13/06/16.
  */
 public class WifiFragment extends Fragment implements View.OnClickListener {
-    final String TAG = getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
     private TextView mTextViewMessage;
     private Button mButtonProceed;
     private BroadcastReceiver wifiChangedReceiver = new BroadcastReceiver() {
@@ -44,9 +44,9 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_wifi, container, false);
-        mTextViewMessage = (TextView) view.findViewById(R.id.tv_wifi_msg);
-        (view.findViewById(R.id.btn_connect)).setOnClickListener(this);
-        mButtonProceed = (Button) view.findViewById(R.id.btn_proceed);
+        mTextViewMessage = (TextView) view.findViewById(R.id.textview_wifi_msg);
+        (view.findViewById(R.id.button_connect)).setOnClickListener(this);
+        mButtonProceed = (Button) view.findViewById(R.id.button_proceed);
         mButtonProceed.setEnabled(false);
         mButtonProceed.setOnClickListener(this);
         return view;
@@ -70,14 +70,14 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.btn_connect)
+        if (view.getId() == R.id.button_connect)
             startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
         else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                getFragmentManager().beginTransaction().replace(R.id.container,
+                getFragmentManager().beginTransaction().replace(R.id.layout_container,
                         new PermissionsFragment()).commit();
             else
-                getFragmentManager().beginTransaction().replace(R.id.container,
+                getFragmentManager().beginTransaction().replace(R.id.layout_container,
                         new GoProFragment()).commit();
         }
     }
@@ -94,8 +94,8 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
 
         @Override
         protected String doInBackground(Void... voids) {
-            if(!checkGoProDevice()) {
-                if(checkSJCAMDevice()) return "SJCAM";
+            if (!checkGoProDevice()) {
+                if (checkSJCAMDevice()) return "SJCAM";
                 return null;
             }
             return "GOPRO";
@@ -123,8 +123,8 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
                 InputStreamReader is = new InputStreamReader(urlConnection.getInputStream());
                 BufferedReader br = new BufferedReader(is);
                 String line = "";
-                while((line = br.readLine()) != null) {
-                    if(line.contains("<Function>")) return true;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains("<Function>")) return true;
                 }
                 return false;
             } catch (IOException e) {
@@ -139,7 +139,7 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
                 PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
                         .putString("DEVICE_TYPE", result).commit();
                 if (result.equals("GOPRO")) Log.i(TAG, "Connected to GoPro device.");
-                else if(result.equals("SJCAM")) Log.i(TAG, "Connected to SJCAM device.");
+                else if (result.equals("SJCAM")) Log.i(TAG, "Connected to SJCAM device.");
                 mButtonProceed.setEnabled(true);
                 return;
             }

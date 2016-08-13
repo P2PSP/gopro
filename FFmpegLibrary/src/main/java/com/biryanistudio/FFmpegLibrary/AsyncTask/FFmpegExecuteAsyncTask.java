@@ -28,7 +28,7 @@ public class FFmpegExecuteAsyncTask extends AsyncTask<String[], Void, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean result) {
-        if(result) {
+        if (result) {
             mExecuteResponseHandler.onSuccess("Normal termination.");
             mShellCommand.destroyProcess();
         } else {

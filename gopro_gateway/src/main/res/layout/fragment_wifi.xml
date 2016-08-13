@@ -10,31 +10,31 @@
     tools:context=".Activity.MainActivity">
 
     <ImageView
-        android:id="@+id/iv_gopro"
+        android:id="@+id/image_intro"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:src="@drawable/gopro" />
+        android:src="@drawable/intro_image" />
 
     <TextView
-        android:id="@+id/tv_wifi_msg"
+        android:id="@+id/textview_wifi_msg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/iv_gopro"
+        android:layout_below="@id/image_intro"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/vertical_margin"
         android:text="@string/btn_setup_gopro" />
 
     <Button
-        android:id="@+id/btn_connect"
+        android:id="@+id/button_connect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tv_wifi_msg"
+        android:layout_below="@id/textview_wifi_msg"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/vertical_margin"
         android:text="@string/text_connect_to_gopro" />
 
     <Button
-        android:id="@+id/btn_proceed"
+        android:id="@+id/button_proceed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

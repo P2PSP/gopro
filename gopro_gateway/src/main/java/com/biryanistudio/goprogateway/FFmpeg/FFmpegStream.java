@@ -38,7 +38,7 @@ import java.util.TimerTask;
  * Created by Sravan on 10-Jul-16.
  */
 public class FFmpegStream extends Service {
-    final private String TAG = getClass().getSimpleName();
+    private final String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
     private Timer mTimer;
     private String DEVICE_TYPE;

@@ -10,9 +10,9 @@ import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 import java.io.File;
 
 public class FFmpegLoadBinaryAsyncTask extends AsyncTask<Void, Void, Boolean> {
-    final private String TAG = getClass().getSimpleName();
-    final private LoadBinaryResponseHandler mLoadBinaryResponseHandler;
-    final private Context mContext;
+    private final String TAG = getClass().getSimpleName();
+    private final LoadBinaryResponseHandler mLoadBinaryResponseHandler;
+    private final Context mContext;
 
     public FFmpegLoadBinaryAsyncTask(Context context,
                                      LoadBinaryResponseHandler loadBinaryResponseHandler) {

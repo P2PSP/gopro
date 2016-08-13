@@ -1,12 +1,15 @@
-## FFMPEG -- OBTAINING LIVE PREVIEW
-### OSX/LINUX:
+# FFMPEG -- OBTAINING LIVE PREVIEW
+## OSX/LINUX:
 1. Start streaming - `HTTP GET: http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart`
 2. To get stream:
 `ffmpeg -i udp://10.5.5.9:8554 output.mp4`
 
-### ANDROID:
-Library used - Derived from [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java)
-Authored by - [hiteshsondhi88](https://github.com/hiteshsondhi88)
+## ANDROID:
+- Library used is derived from [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java), authored by [hiteshsondhi88](https://github.com/hiteshsondhi88)
+- [Guide](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary/README.md) on compiling ffmpeg yourself; so that you can always use the most up-to-date ffempg binaries in your app.
+
+
+### QUICKSTART ON ADDING FFMPEG-ANDROID-JAVA IN YOUR APP:
 
 - Add dependency: `compile 'com.writingminds:FFmpegAndroid:0.3.2'`
 - Load FFmpeg binary:
@@ -26,13 +29,13 @@ ffmpeg.execute(cmd, new FFmpegExecuteResponseHandler() {
 - To stop:
 `ffmpeg.killRunningProcesses();`
 
-## FFPROBE -- OBTAINING STREAM INFO
+# FFPROBE -- OBTAINING STREAM INFO
 
 1. Start streaming - `HTTP GET: http://10.5.5.9/gp/gpControl/execute?p1=gpStream&a1=proto_v2&c1=restart`
 2. To get info about broadcasted streams:
 `ffprobe -show_streams udp://10.5.5.9:8554`
 
-### OUTPUT:
+## OUTPUT:
 > Input #0, mpegts, from 'udp://10.5.5.9:8554':
   Duration: N/A, start: 0.000000, bitrate: N/A
   Program 1 

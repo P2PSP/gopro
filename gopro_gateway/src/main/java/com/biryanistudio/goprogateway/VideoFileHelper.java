@@ -11,13 +11,14 @@ import java.io.File;
  * Created by Sravan on 02-Aug-16.
  */
 public class VideoFileHelper {
-    final static private String TAG = VideoFileHelper.class.getSimpleName();
+    static final private String TAG = VideoFileHelper.class.getSimpleName();
     static private String FOLDER_NAME = "GoPro Gateway";
     static private String PREF_KEY = "SAVE_FILE_ID";
 
 
     /**
      * Returns a String value denoting the path where the file will be saved.
+     *
      * @param context Context
      * @return String The save path
      */
@@ -34,6 +35,7 @@ public class VideoFileHelper {
     /**
      * Returns an int value that is appended to the file name in {@link #getPath(Context context,
      * String device) getPath} method.
+     *
      * @param context Context
      * @return int The number to be concatenated with the file name
      */
