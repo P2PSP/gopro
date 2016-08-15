@@ -10,6 +10,7 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+        resValue "string", "facebook_app_id", facebook_app_id
     }
     buildTypes {
         release {
