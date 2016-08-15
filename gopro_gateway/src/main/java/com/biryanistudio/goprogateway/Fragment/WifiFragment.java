@@ -31,15 +31,22 @@ import java.net.URLConnection;
  */
 public class WifiFragment extends Fragment implements View.OnClickListener {
     private final String TAG = getClass().getSimpleName();
+    private ConnectivityManager mConnectivityManager;
     private TextView mTextViewMessage;
     private Button mButtonProceed;
-    private BroadcastReceiver wifiChangedReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mWifiChangedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.i(TAG, "Connectivity change, updating views");
             updateViews();
         }
     };
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mConnectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,15 +64,15 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
         super.onStart();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        getActivity().registerReceiver(wifiChangedReceiver, intentFilter);
+        getActivity().registerReceiver(mWifiChangedReceiver, intentFilter);
         updateViews();
-        new CheckStatusTask().execute();
+        new CheckAndFindDeviceTask().execute();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        getActivity().unregisterReceiver(wifiChangedReceiver);
+        getActivity().unregisterReceiver(mWifiChangedReceiver);
     }
 
     @Override
@@ -88,7 +95,7 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
         mTextViewMessage.setText("Currently connected to: " + SSID);
     }
 
-    private class CheckStatusTask extends AsyncTask<Void, Void, String> {
+    private class CheckAndFindDeviceTask extends AsyncTask<Void, Void, String> {
         final private String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/status";
         final private String SJCAM_STREAM_URL = "http://192.168.1.254/?custom=1&cmd=3014";
 
@@ -98,9 +105,15 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
                 if (checkSJCAMDevice()) return "SJCAM";
                 return null;
             }
-            return "GOPRO";
+            return "GoPro";
         }
 
+        /**
+         * Checks if the device is connected to a GoPro camera by making a GET request for the
+         * 'status' of the camera's parameters.
+         *
+         * @return boolean Whether the device is connected to a GoPro
+         */
         private boolean checkGoProDevice() {
             try {
                 URL goproURL = new URL(GOPRO_STREAM_URL);
@@ -115,6 +128,12 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
             }
         }
 
+        /**
+         * Checks if the device is connected to a SJCAM camera by making a GET request for the
+         * 'status' of the camera's parameters.
+         *
+         * @return boolean Whether the device is connected to a SJCAM
+         */
         private boolean checkSJCAMDevice() {
             try {
                 URL sjcamURL = new URL(SJCAM_STREAM_URL);
@@ -137,8 +156,8 @@ public class WifiFragment extends Fragment implements View.OnClickListener {
         protected void onPostExecute(String result) {
             if (result != null) {
                 PreferenceManager.getDefaultSharedPreferences(getActivity()).edit()
-                        .putString("DEVICE_TYPE", result).commit();
-                if (result.equals("GOPRO")) Log.i(TAG, "Connected to GoPro device.");
+                        .putString("DEVICE", result).commit();
+                if (result.equals("GoPro")) Log.i(TAG, "Connected to GoPro device.");
                 else if (result.equals("SJCAM")) Log.i(TAG, "Connected to SJCAM device.");
                 mButtonProceed.setEnabled(true);
                 return;

@@ -15,23 +15,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
-import com.biryanistudio.goprogateway.FFmpeg.FFmpegUpload;
+import com.biryanistudio.goprogateway.FFmpeg.FFmpegUploadToFacebook;
+import com.biryanistudio.goprogateway.FFmpeg.FFmpegUploadToYouTube;
 import com.biryanistudio.goprogateway.R;
+import com.facebook.AccessToken;
 
 /**
  * Created by sravan953 on 13/06/16.
  */
 public class GoProFragment extends Fragment implements View.OnClickListener {
     private final String TAG = getClass().getSimpleName();
-    private static boolean mAPIValid;
-    private String mAPIKey;
+    private static boolean mYouTubeKeyValid = false;
+    private String mYouTubeKey;
+    private static boolean mFacebookValid = false;
     private static TextView mTextLog;
     private Button mButtonStartStream;
     private static Button mButtonStartUpload;
     private Button mButtonStopStream;
     private Intent mIntentStartStream;
     private Intent mIntentStartUpload;
-    private String DEVICE_TYPE;
+    private String mDevice;
 
     public static class ProgressReceiver extends BroadcastReceiver {
         public ProgressReceiver() {
@@ -39,12 +42,15 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() == "com.biryanistudio.goprogateway.UPLOAD_READY") {
-                if (mAPIValid && !mButtonStartUpload.isEnabled()) {
+            if (intent.getAction().equals("com.biryanistudio.goprogateway.UPLOAD_READY")) {
+                if (mYouTubeKeyValid && !mButtonStartUpload.isEnabled()) {
                     mButtonStartUpload.setEnabled(true);
                     mTextLog.append("\nLive stream ready to upload to YouTube...");
+                } else if (mFacebookValid && !mButtonStartUpload.isEnabled()) {
+                    mButtonStartUpload.setEnabled(true);
+                    mTextLog.append("\nLive stream ready to upload to Facebook...");
                 }
-            } else if (intent.getAction() == "com.biryanistudio.goprogateway.TEXT_LOG") {
+            } else if (intent.getAction().equals("com.biryanistudio.goprogateway.TEXT_LOG")) {
                 mTextLog.append("\n" + intent.getStringExtra("TEXT_LOG"));
             }
         }
@@ -53,8 +59,7 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DEVICE_TYPE = (PreferenceManager.getDefaultSharedPreferences(getActivity()))
-                .getString("DEVICE_TYPE", "");
+        mDevice = (PreferenceManager.getDefaultSharedPreferences(getActivity())).getString("DEVICE", "");
     }
 
     @Override
@@ -69,19 +74,18 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         mButtonStopStream = (Button) view.findViewById(R.id.button_stop_stream);
         mButtonStopStream.setOnClickListener(this);
         mButtonStopStream.setEnabled(false);
-        mTextLog.setText(DEVICE_TYPE);
+        mTextLog.setText("Connected to: "  + mDevice);
 
         mIntentStartStream = new Intent(getActivity(), FFmpegStream.class);
-        mIntentStartStream.putExtra("DEVICE_TYPE", DEVICE_TYPE);
-        mIntentStartUpload = new Intent(getActivity(), FFmpegUpload.class);
-        mIntentStartUpload.putExtra("DEVICE_TYPE", DEVICE_TYPE);
+        mIntentStartStream.putExtra("DEVICE", mDevice);
         return view;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        checkAPIKey();
+        checkYouTubeAPI();
+        checkFacebook();
     }
 
     @Override
@@ -116,19 +120,34 @@ public class GoProFragment extends Fragment implements View.OnClickListener {
         }
     }
 
-    private void checkAPIKey() {
+    private void checkYouTubeAPI() {
         SharedPreferences sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getActivity());
-        mAPIKey = sharedPreferences.getString("YOUTUBE_API", null);
-        if (mAPIKey != null) {
-            if (mAPIKey.length() == 19) {
-                mAPIValid = true;
-                mIntentStartUpload.putExtra("YOUTUBE_API", mAPIKey);
+        mYouTubeKey = sharedPreferences.getString("YOUTUBE_API", null);
+        if (mYouTubeKey != null) {
+            if (mYouTubeKey.length() == 19) {
+                mYouTubeKeyValid = true;
+                mIntentStartUpload = new Intent(getActivity(), FFmpegUploadToYouTube.class);
+                mIntentStartUpload.putExtra("DEVICE", mDevice);
+                mIntentStartUpload.putExtra("KEY", mYouTubeKey);
                 return;
             }
         }
-        mAPIValid = false;
         Toast.makeText(getActivity(), "To livestream to YouTube, " +
-                "please enter a valid YouTube API key.", Toast.LENGTH_LONG).show();
+                "please enter a valid YouTube API key.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void checkFacebook() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        if(accessToken != null) {
+            mFacebookValid = true;
+            mIntentStartUpload = new Intent(getActivity(), FFmpegUploadToFacebook.class);
+            mIntentStartUpload.putExtra("DEVICE", mDevice);
+            mIntentStartUpload.putExtra("KEY", accessToken.getToken());
+            mIntentStartUpload.putExtra("USERID", accessToken.getUserId());
+            return;
+        }
+        Toast.makeText(getActivity(), "To livestream to Facebook, " +
+                "please login via the Settings screen", Toast.LENGTH_SHORT).show();
     }
 }
