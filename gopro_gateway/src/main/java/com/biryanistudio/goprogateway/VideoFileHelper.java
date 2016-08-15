@@ -5,6 +5,8 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.biryanistudio.goprogateway.FFmpeg.FFmpegStream;
+
 import java.io.File;
 
 /**
@@ -25,10 +27,15 @@ public class VideoFileHelper {
     public static String getPath(Context context, String device) {
         checkAndMakeFolder();
         int id = getVideoFileID(context);
-        updateVideoFileID(context, id);
         File folder = new File(Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), FOLDER_NAME);
-        File file = new File(folder, device + "_" + id + ".avi");
+        File file;
+        if (context instanceof FFmpegStream) {
+            updateVideoFileID(context, id);
+            file = new File(folder, device + "_" + id + ".avi");
+        } else {
+            file = new File(folder, device + "_" + (id - 1) + ".avi");
+        }
         return file.getAbsolutePath();
     }
 
@@ -40,24 +47,8 @@ public class VideoFileHelper {
      * @return int The number to be concatenated with the file name
      */
     private static int getVideoFileID(Context context) {
-        int numFiles = getNumberOfFiles();
         int fileID = PreferenceManager.getDefaultSharedPreferences(context).getInt(PREF_KEY, 1);
-        if (numFiles != fileID) {
-            updateVideoFileID(context, numFiles);
-            fileID = PreferenceManager.getDefaultSharedPreferences(context).getInt(PREF_KEY, 1);
-        }
         return fileID;
-    }
-
-    /**
-     * Returns the number of files in the device-specific folder.
-     *
-     * @return int Number of files in device-specific
-     */
-    private static int getNumberOfFiles() {
-        File folder = new File(Environment.
-                getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), FOLDER_NAME);
-        return folder.list().length;
     }
 
     /**

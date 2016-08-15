@@ -20,6 +20,8 @@ import com.biryanistudio.FFmpegLibrary.Exception.FFmpegNotSupportedException;
 import com.biryanistudio.FFmpegLibrary.FFmpeg;
 import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
+import com.biryanistudio.goprogateway.Interface.IWifiAvailable;
+import com.biryanistudio.goprogateway.NetworkCallback.WifiNetworkCallback;
 import com.biryanistudio.goprogateway.R;
 import com.biryanistudio.goprogateway.VideoFileHelper;
 
@@ -37,11 +39,13 @@ import java.util.TimerTask;
 /**
  * Created by Sravan on 10-Jul-16.
  */
-public class FFmpegStream extends Service {
+public class FFmpegStream extends Service implements IWifiAvailable {
     private final String TAG = getClass().getSimpleName();
     private FFmpeg mFFmpeg;
     private Timer mTimer;
-    private String DEVICE_TYPE;
+    private String mDevice;
+    private ConnectivityManager mConnectivityManager;
+    private ConnectivityManager.NetworkCallback mNetworkCallback;
 
     @Nullable
     @Override
@@ -52,7 +56,7 @@ public class FFmpegStream extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
-        DEVICE_TYPE = intent.getStringExtra("DEVICE_TYPE");
+        mDevice = intent.getStringExtra("DEVICE");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
         }
@@ -63,7 +67,9 @@ public class FFmpegStream extends Service {
 
     @Override
     public void onDestroy() {
+        super.onDestroy();
         Log.i(TAG, "onDestroy");
+        mConnectivityManager.unregisterNetworkCallback(mNetworkCallback);
         if (mTimer != null) {
             Log.i(TAG, "Clearing timer.");
             mTimer.cancel();
@@ -71,25 +77,15 @@ public class FFmpegStream extends Service {
         }
         if (mFFmpeg.isFFmpegCommandRunning()) Log.i(TAG, "Killing process: " +
                 mFFmpeg.killRunningProcesses());
-        super.onDestroy();
     }
 
     private void showNotification() {
         Notification notification = new Notification.Builder(this)
-                .setContentTitle("Stream")
+                .setContentTitle("Streaming from " + mDevice)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setOngoing(true)
                 .build();
         startForeground(953, notification);
-    }
-
-    public String[] getExecCmd() {
-        String cmd[];
-        if (DEVICE_TYPE.equals("GOPRO")) cmd = new String[]{"-i", "udp://:8554",
-                VideoFileHelper.getPath(this, DEVICE_TYPE)};
-        else cmd = new String[]{"-i", "rtsp://192.168.1.254/sjcam.mov",
-                VideoFileHelper.getPath(this, DEVICE_TYPE)};
-        return cmd;
     }
 
     /**
@@ -134,38 +130,34 @@ public class FFmpegStream extends Service {
      * is available to the current process.
      */
     private void bindPortOnWifi() {
-        final ConnectivityManager connectivityManager = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
+        mConnectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         final NetworkRequest wifiNetworkReq = new NetworkRequest.Builder()
                 .addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build();
-        connectivityManager.requestNetwork(wifiNetworkReq, new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(Network network) {
-                Log.i(TAG, "WIFI AVAILABLE");
-                if (DEVICE_TYPE.equals("GOPRO")) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (connectivityManager.bindProcessToNetwork(network)) {
-                            new RequestStreamTask().execute();
-                            return;
-                        }
-                    } else {
-                        if (ConnectivityManager.setProcessDefaultNetwork(network)) {
-                            new RequestStreamTask().execute();
-                            return;
-                        }
-                    }
-                    Log.i(TAG, "Could not bind to WIFI.");
-                    sendProgressBroadcast("Oops, something went wrong!");
-                }
-                executeCmd();
-            }
+        mNetworkCallback = new WifiNetworkCallback(this);
+        mConnectivityManager.requestNetwork(wifiNetworkReq, mNetworkCallback);
+    }
 
-            @Override
-            public void onLost(Network network) {
-                Log.i(TAG, "WIFI LOST");
-                sendProgressBroadcast("WiFi connection lost...");
-            }
-        });
+    @Override
+    public void wifiAvailable(Network wifiNetwork) {
+        Log.i(TAG, "WiFi available.");
+        boolean bound;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            bound = mConnectivityManager.bindProcessToNetwork(wifiNetwork);
+        } else {
+            bound = ConnectivityManager.setProcessDefaultNetwork(wifiNetwork);
+        }
+        if (bound) {
+            if (mDevice.equals("GoPro")) new RequestStreamTask().execute();
+            else executeCmd();
+        } else {
+            Log.i(TAG, "Could not bind to WiFi.");
+            sendProgressBroadcast("Oops, something went wrong!");
+        }
+    }
+
+    @Override
+    public void wifiLost() {
+        Log.i(TAG, "WiFi lost.");
     }
 
     private void executeCmd() {
@@ -206,6 +198,15 @@ public class FFmpegStream extends Service {
         } catch (FFmpegCommandAlreadyRunningException e) {
             e.printStackTrace();
         }
+    }
+
+    public String[] getExecCmd() {
+        String cmd[];
+        if (mDevice.equals("GoPro")) cmd = new String[]{"-i", "udp://:8554",
+                VideoFileHelper.getPath(this, mDevice)};
+        else cmd = new String[]{"-i", "rtsp://192.168.1.254/sjcam.mov",
+                VideoFileHelper.getPath(this, mDevice)};
+        return cmd;
     }
 
     private void sendUploadReadyBroadcast() {
@@ -250,6 +251,7 @@ public class FFmpegStream extends Service {
                 keepAlive();
             }
         }
+
     }
 
     private void keepAlive() {
