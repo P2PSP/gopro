@@ -40,7 +40,9 @@
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
 
-        <receiver android:name=".Fragment.GoProFragment$ProgressReceiver">
+        <receiver
+            android:name=".Activity.MainActivity$ProgressReceiver"
+            android:exported="false">
             <intent-filter>
                 <action android:name="com.biryanistudio.goprogateway.UPLOAD_READY"/>
             </intent-filter>
@@ -48,12 +50,20 @@
                 <action android:name="com.biryanistudio.goprogateway.TEXT_LOG"/>
             </intent-filter>
         </receiver>
-        
+
         <service
-            android:name=".FFmpeg.FFmpegUploadToFacebook"
+            android:name=".FFmpegStream.FFmpegStreamFromGoPro"
+            android:process=":stream"/>
+
+        <service
+            android:name=".FFmpegStream.FFmpegStreamFromSJCAM"
+            android:process=":stream"/>
+
+        <service
+            android:name=".FFmpegUpload.FFmpegUploadToFacebook"
             android:process=":upload"/>
         <service
-            android:name=".FFmpeg.FFmpegUploadToYouTube"
+            android:name=".FFmpegUpload.FFmpegUploadToYouTube"
             android:process=":upload"/>
     </application>
 

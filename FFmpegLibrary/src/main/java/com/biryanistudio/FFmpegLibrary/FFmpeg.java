@@ -75,6 +75,7 @@ public class FFmpeg {
                 && !mFFmpegExecuteAsyncTask.isCancelled()
                 && mFFmpegExecuteAsyncTask.cancel(true);
         Log.i(TAG, "Kill ExecuteAsyncTask: " + killExecuteTask);
+        mFFmpegExecuteAsyncTask = null;
         return killLoadTask && killExecuteTask;
     }
 }

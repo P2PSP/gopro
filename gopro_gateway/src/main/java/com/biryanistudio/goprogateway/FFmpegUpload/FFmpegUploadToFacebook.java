@@ -1,7 +1,6 @@
-package com.biryanistudio.goprogateway.FFmpeg;
+package com.biryanistudio.goprogateway.FFmpegUpload;
 
 import android.app.Notification;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.Uri;
@@ -9,10 +8,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 
-import com.biryanistudio.FFmpegLibrary.Exception.FFmpegCommandAlreadyRunningException;
-import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.goprogateway.R;
-import com.biryanistudio.goprogateway.VideoFileHelper;
+import com.biryanistudio.goprogateway.Utility;
+import com.facebook.AccessToken;
+import com.facebook.FacebookSdk;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,24 +26,28 @@ import java.net.URL;
  * Created by Sravan on 10-Jul-16.
  */
 public class FFmpegUploadToFacebook extends AbstractFFmpegUpload {
-    private String mKey;
+    private String mAccessToken;
     private String mUserId;
-    private String mDevice;
     private String mFacebookURL;
 
     @Override
-    public void handleIntent(Intent intent) {
-        mDevice = intent.getStringExtra("DEVICE");
-        mKey = intent.getStringExtra("KEY");
-        mUserId = intent.getStringExtra("USERID");
+    protected void getKey() {
+        FacebookSdk.sdkInitialize(this, new FacebookSdk.InitializeCallback() {
+            @Override
+            public void onInitialized() {
+                AccessToken accessToken = AccessToken.getCurrentAccessToken();
+                mAccessToken = accessToken.getToken();
+                mUserId = accessToken.getUserId();
+
+            }
+        });
     }
 
     @Override
     public void showNotification() {
         Notification notification = new Notification.Builder(this)
-                .setContentTitle("Streaming from " + mDevice + "\n"
-                        + "Uploading to Facebook...")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Uploading to Facebook...")
+                .setSmallIcon(R.drawable.ic_notification)
                 .setOngoing(true)
                 .build();
         startForeground(953, notification);
@@ -60,46 +63,22 @@ public class FFmpegUploadToFacebook extends AbstractFFmpegUpload {
             bound = ConnectivityManager.setProcessDefaultNetwork(cellularNetwork);
         }
         if (bound) {
-            new CreateFacebookStream().execute();
+            if(FacebookSdk.isInitialized()) new CreateFacebookStream().execute();
         } else {
             Log.i(TAG, "Could not bind to cellular.");
         }
     }
 
     @Override
-    public void executeCmd() {
-        try {
-            String[] cmd = {"-re", "-i", VideoFileHelper.getPath(this, mDevice),
-                    "-ar", "44100", "-f", "flv", mFacebookURL};
-            mFFmpeg.execute(cmd, new ExecuteResponseHandler() {
-                @Override
-                public void onStart() {
-                    Log.i(TAG, "FFmpeg execute onStart");
-                }
+    public void cellularLost() {
+        Log.i(TAG, "Lost cellular.");
+    }
 
-                @Override
-                public void onProgress(String message) {
-                    Log.i(TAG, message);
-                }
-
-                @Override
-                public void onFailure(String message) {
-                    Log.i(TAG, message);
-                }
-
-                @Override
-                public void onSuccess(String message) {
-                    Log.i(TAG, message);
-                }
-
-                @Override
-                public void onFinish() {
-                    Log.i(TAG, "FFmpeg execute onFinish");
-                }
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-            e.printStackTrace();
-        }
+    @Override
+    protected String[] getExecCmd() {
+        String[] cmd = {"-re", "-i", Utility.getPath(),
+                "-ar", "44100", "-f", "flv", mFacebookURL};
+        return cmd;
     }
 
     private class CreateFacebookStream extends AsyncTask<Void, Void, String> {
@@ -111,7 +90,7 @@ public class FFmpegUploadToFacebook extends AbstractFFmpegUpload {
                         .authority("graph.facebook.com")
                         .appendPath(mUserId)
                         .appendPath("live_videos")
-                        .appendQueryParameter("access_token", mKey)
+                        .appendQueryParameter("access_token", mAccessToken)
                         .appendQueryParameter("published", "true");
                 URL url = new URL(builder.build().toString());
                 Log.i(TAG, url.toString());
@@ -137,7 +116,7 @@ public class FFmpegUploadToFacebook extends AbstractFFmpegUpload {
             try {
                 JSONObject jsonObject = new JSONObject(result);
                 mFacebookURL = jsonObject.get("stream_url").toString();
-                executeCmd();
+                loadFFMPEG();
             } catch (JSONException e) {
                 e.printStackTrace();
             }

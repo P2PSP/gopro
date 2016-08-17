@@ -23,7 +23,7 @@ public class FFmpegExecuteAsyncTask extends AsyncTask<String[], Void, Boolean> {
     protected Boolean doInBackground(String[]... params) {
         mShellCommand = new ShellCommand();
         mShellCommand.run(params[0]);
-        return mShellCommand.getAndPublishUpdates(mExecuteResponseHandler);
+        return mShellCommand.getAndPublishUpdates(this, mExecuteResponseHandler);
     }
 
     @Override
@@ -34,6 +34,13 @@ public class FFmpegExecuteAsyncTask extends AsyncTask<String[], Void, Boolean> {
         } else {
             mExecuteResponseHandler.onFailure("Interrupted execution.");
         }
+        mExecuteResponseHandler.onFinish();
+    }
+
+    @Override
+    protected void onCancelled(Boolean aBoolean) {
+        super.onCancelled(aBoolean);
+        mShellCommand.destroyProcess();
         mExecuteResponseHandler.onFinish();
     }
 

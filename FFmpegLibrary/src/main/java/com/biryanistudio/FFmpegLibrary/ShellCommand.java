@@ -1,5 +1,6 @@
 package com.biryanistudio.FFmpegLibrary;
 
+import com.biryanistudio.FFmpegLibrary.AsyncTask.FFmpegExecuteAsyncTask;
 import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 
 import java.io.BufferedReader;
@@ -18,12 +19,12 @@ public class ShellCommand {
         }
     }
 
-    public boolean getAndPublishUpdates(ExecuteResponseHandler executeResponseHandler) {
+    public boolean getAndPublishUpdates(FFmpegExecuteAsyncTask asyncTask, ExecuteResponseHandler executeResponseHandler) {
         String line;
         BufferedReader reader = new BufferedReader(new InputStreamReader(mProcess.getErrorStream()));
         while (!isProcessCompleted()) {
             try {
-                while ((line = reader.readLine()) != null) {
+                while ((line = reader.readLine()) != null && !asyncTask.isCancelled()) {
                     executeResponseHandler.onProgress(line);
                 }
                 return true;
