@@ -28,9 +28,6 @@
 
 ![](https://github.com/sravan953/gopro/blob/master/android_studio_compile.gif)
 
-## ANDROID N DEV PREVIEW 4 ISSUE
-> Cleartext HTTP traffic to 10.5.59 not permitted
-
-#### WORKAROUND:
-From [StackOverflow](http://stackoverflow.com/questions/37866619/cleartext-http-traffic-to-myserver-com-not-permitted-on-android-n-preview), call:
-`NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();`
+## ISSUES
+1. App crashes on dual SIM phones.
+2. App does not work on VoLTE networks.
