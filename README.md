@@ -26,7 +26,7 @@
 4. `Build` > `Rebuild project`
 5. `Run`
 
-![](https://github.com/sravan953/gopro/blob/master/android_studio_compile.gif)
+![](https://github.com/sravan953/gopro/blob/master/Docs/android_studio_compile.gif)
 
 ## ISSUES
 1. App crashes on dual SIM phones.
