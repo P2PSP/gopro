@@ -175,11 +175,4 @@ public abstract class AbstractFFmpegStream extends Service implements IWifiAvail
                 FFmpegUploadToFacebook.class);
         startService(mStartUploadIntent);
     }
-
-    protected void sendProgressBroadcast(String message) {
-        Intent intent = new Intent();
-        intent.setAction("com.biryanistudio.goprogateway.TEXT_LOG");
-        intent.putExtra("TEXT_LOG", message);
-        sendBroadcast(intent);
-    }
 }

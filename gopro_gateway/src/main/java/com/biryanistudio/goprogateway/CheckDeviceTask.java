@@ -1,7 +1,8 @@
 package com.biryanistudio.goprogateway;
 
 import android.os.AsyncTask;
-import android.util.Log;
+
+import com.biryanistudio.goprogateway.Fragment.WiFiFragment;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,6 +18,11 @@ public class CheckDeviceTask extends AsyncTask<Void, Void, String> {
     private final String TAG = getClass().getSimpleName();
     private final String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/status";
     private final String SJCAM_STREAM_URL = "http://192.168.1.254/?custom=1&cmd=3014";
+    private final WiFiFragment mWiFiFragment;
+
+    public CheckDeviceTask(WiFiFragment wiFiFragment) {
+        mWiFiFragment = wiFiFragment;
+    }
 
     @Override
     protected String doInBackground(Void... voids) {
@@ -73,11 +79,6 @@ public class CheckDeviceTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        if (result != null) {
-            if (result.equals("GoPro")) Log.i(TAG, "Connected to GoPro device.");
-            else if (result.equals("SJCAM")) Log.i(TAG, "Connected to SJCAM device.");
-            return;
-        }
-        Log.i(TAG, "Not connected to any device.");
+        mWiFiFragment.connected(result);
     }
 }

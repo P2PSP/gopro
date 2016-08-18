@@ -4,20 +4,20 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 
 import com.biryanistudio.goprogateway.FFmpegStream.AbstractFFmpegStream;
-import com.biryanistudio.goprogateway.Activity.MainActivity;
+import com.biryanistudio.goprogateway.Fragment.WiFiFragment;
 
 /**
  * Created by Sravan on 14-Aug-16.
  */
 public class WifiNetworkCallback extends ConnectivityManager.NetworkCallback {
     AbstractFFmpegStream mFFmpegStream;
-    MainActivity mWifiFragment;
+    WiFiFragment mWifiFragment;
 
     public WifiNetworkCallback(AbstractFFmpegStream context) {
          mFFmpegStream = context;
     }
 
-    public WifiNetworkCallback(MainActivity context) {
+    public WifiNetworkCallback(WiFiFragment context) {
         mWifiFragment = context;
     }
 
