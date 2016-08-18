@@ -16,7 +16,6 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.biryanistudio.goprogateway.FFmpegStream.FFmpegStreamFromGoPro;
-import com.biryanistudio.goprogateway.FFmpegStream.FFmpegStreamFromSJCAM;
 import com.biryanistudio.goprogateway.R;
 
 /**
@@ -53,13 +52,7 @@ public class DeviceFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (checkCellular()) {
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String device = sharedPreferences.getString("DEVICE", "");
-            if (device.equals("GoPro")) {
-                mFFmpegIntent = new Intent(getActivity(), FFmpegStreamFromGoPro.class);
-            } else if (device.equals("SJCAM")) {
-                mFFmpegIntent = new Intent(getActivity(), FFmpegStreamFromSJCAM.class);
-            }
+            mFFmpegIntent = new Intent(getActivity(), FFmpegStreamFromGoPro.class);
             getActivity().startService(mFFmpegIntent);
             Drawable drawable = mButtonStart.getDrawable();
             ((Animatable) drawable).start();

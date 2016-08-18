@@ -13,8 +13,8 @@
               tools:context=".Activity.MainActivity">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="125dp"
+        android:layout_height="125dp"
         android:src="@drawable/youtube_banner"/>
 
     <EditText

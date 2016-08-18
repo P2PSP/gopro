@@ -146,17 +146,4 @@ public abstract class AbstractFFmpegUpload extends Service implements ICellularA
     }
 
     protected abstract String[] getExecCmd();
-
-    protected void sendUploadingBroadcast() {
-        Intent intent = new Intent();
-        intent.setAction("com.biryanistudio.goprogateway.UPLOADING");
-        sendBroadcast(intent);
-    }
-
-    protected void sendProgressBroadcast(String message) {
-        Intent intent = new Intent();
-        intent.setAction("com.biryanistudio.goprogateway.TEXT_LOG");
-        intent.putExtra("TEXT_LOG", message);
-        sendBroadcast(intent);
-    }
 }
