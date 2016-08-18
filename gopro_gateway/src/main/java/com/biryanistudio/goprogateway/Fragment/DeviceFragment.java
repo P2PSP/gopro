@@ -66,8 +66,7 @@ public class DeviceFragment extends Fragment implements View.OnClickListener {
         ConnectivityManager connectivityManager = (ConnectivityManager) getActivity()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         int type = (connectivityManager.getActiveNetworkInfo()).getType();
-        if (type == ConnectivityManager.TYPE_MOBILE) return true;
-        else return false;
+        return type == ConnectivityManager.TYPE_MOBILE;
     }
 
     private void setButtonImage() {

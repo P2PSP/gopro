@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -30,6 +32,21 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         FacebookSdk.sdkInitialize(this);
         callbackManager = CallbackManager.Factory.create();
         setContentView(R.layout.activity_settings);
+        EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                saveYouTubeApi();
+            }
+        });
         setSwitch();
         setFacebookLogin();
     }
@@ -37,8 +54,11 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
     private void setSwitch() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String destination = sharedPreferences.getString("DESTINATION", "");
-        if (destination.equals("Facebook"))
+        if (destination.equals("YouTube")) {
+            fillEditText();
+        } else if (destination.equals("Facebook")) {
             ((Switch) findViewById(R.id.switch_destination)).setChecked(true);
+        }
         ((Switch) findViewById(R.id.switch_destination)).setOnCheckedChangeListener(this);
     }
 
@@ -73,6 +93,19 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void fillEditText() {
+        EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String api = sharedPrefs.getString("YOUTUBE_API", "");
+        editText.setText(api);
+    }
+
     private void saveYouTubeApi() {
         SharedPreferences.Editor sharedPrefsEditor = PreferenceManager
                 .getDefaultSharedPreferences(this).edit();
@@ -100,11 +133,5 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         } else {
             sharedPrefsEditor.putString("DESTINATION", "Facebook").apply();
         }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 }

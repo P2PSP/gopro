@@ -21,6 +21,7 @@
         android:id="@+id/edit_text_youtube_api"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:inputType="textPassword"
         android:hint="@string/pref_youtube_title"
         android:textColorHint="@android:color/darker_gray"/>
 

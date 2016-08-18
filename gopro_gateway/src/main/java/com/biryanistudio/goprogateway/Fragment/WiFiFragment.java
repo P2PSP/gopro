@@ -58,6 +58,11 @@ public class WiFiFragment extends Fragment implements IWifiAvailable, View.OnCli
     @Override
     public void onStart() {
         super.onStart();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !mLocationPerm) {
+            obtainPermissions();
+        } else {
+            mLocationPerm = true;
+        }
         bindWifiToProcess();
     }
 
@@ -71,10 +76,6 @@ public class WiFiFragment extends Fragment implements IWifiAvailable, View.OnCli
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.button_connect) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !mLocationPerm) {
-                obtainPermissions();
-                return;
-            }
             startActivity(new Intent(WifiManager.ACTION_PICK_WIFI_NETWORK));
         } else if (view.getId() == R.id.button_proceed) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -82,8 +83,10 @@ public class WiFiFragment extends Fragment implements IWifiAvailable, View.OnCli
             } else {
                 ConnectivityManager.setProcessDefaultNetwork(null);
             }
-            getFragmentManager().beginTransaction().replace(R.id.container, new DeviceFragment(),
-                    null).addToBackStack("WiFiFragment").commit();
+            if (mLocationPerm) {
+                getFragmentManager().beginTransaction().replace(R.id.container, new DeviceFragment(),
+                        null).addToBackStack("WiFiFragment").commit();
+            }
         }
     }
 
