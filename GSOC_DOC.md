@@ -11,5 +11,5 @@ A user-friendly app that allows the user to pair with a GoPro device and then up
 
 #### CHECKLIST:
 1. **DONE** - Build and compile ffmpeg for Android. [Here's how](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary/BUILD_GUIDE).
-2. Obtain live preview of GoPro's point of view.
-3. **DONE** - Upload live stream to popular streaming desinations. In this case, YouTube. Facebook streaming is work in progress.
+2. **NOT DONE** Obtain live preview of GoPro's point of view.
+3. **DONE** - Upload live stream to popular streaming desinations. YouTube and Facebook streaming are supported.
