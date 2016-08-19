@@ -1,20 +1,18 @@
 package com.biryanistudio.goprogateway.NetworkCallback;
 
-import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 
-import com.biryanistudio.goprogateway.FFmpeg.FFmpegUploadToFacebook;
-import com.biryanistudio.goprogateway.FFmpeg.FFmpegUploadToYouTube;
+import com.biryanistudio.goprogateway.FFmpegUpload.AbstractFFmpegUpload;
 
 /**
  * Created by Sravan on 14-Aug-16.
  */
 public class CellularNetworkCallback extends ConnectivityManager.NetworkCallback {
-    Context mContext;
+    AbstractFFmpegUpload mFFmpegUpload;
 
-    public CellularNetworkCallback(Context context) {
-        mContext = context;
+    public CellularNetworkCallback(AbstractFFmpegUpload context) {
+        mFFmpegUpload = context;
     }
 
     @Override
@@ -30,18 +28,10 @@ public class CellularNetworkCallback extends ConnectivityManager.NetworkCallback
     }
 
     private void cellularAvailable(Network network) {
-        if (mContext instanceof FFmpegUploadToFacebook) {
-            ((FFmpegUploadToFacebook) mContext).cellularAvailable(network);
-        } else {
-            ((FFmpegUploadToYouTube) mContext).cellularAvailable(network);
-        }
+        mFFmpegUpload.cellularAvailable(network);
     }
 
     private void cellularLost() {
-        if (mContext instanceof FFmpegUploadToFacebook) {
-            ((FFmpegUploadToFacebook) mContext).cellularLost();
-        } else {
-            ((FFmpegUploadToYouTube) mContext).cellularLost();
-        }
+        mFFmpegUpload.cellularLost();
     }
 }

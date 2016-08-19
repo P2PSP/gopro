@@ -1,0 +1,7 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/camera_svg">
+    <target
+        android:name="wireless"
+        android:animation="@anim/color_camera"/>
+</animated-vector>

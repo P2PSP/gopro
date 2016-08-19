@@ -6,18 +6,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.biryanistudio.goprogateway.Fragment.WifiFragment;
+import com.biryanistudio.goprogateway.Fragment.WiFiFragment;
 import com.biryanistudio.goprogateway.R;
-import com.facebook.FacebookSdk;
 
+/**
+ * Created by sravan953 on 13/06/16.
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FacebookSdk.sdkInitialize(this);
         setContentView(R.layout.activity_main);
-        getFragmentManager().beginTransaction().replace(R.id.layout_container, new WifiFragment()).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container, new WiFiFragment(), null)
+                .commit();
     }
 
     @Override

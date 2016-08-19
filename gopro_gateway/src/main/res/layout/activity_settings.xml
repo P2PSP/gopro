@@ -13,14 +13,15 @@
               tools:context=".Activity.MainActivity">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/youtube"/>
+        android:layout_width="125dp"
+        android:layout_height="125dp"
+        android:src="@drawable/youtube_banner"/>
 
     <EditText
         android:id="@+id/edit_text_youtube_api"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:inputType="textPassword"
         android:hint="@string/pref_youtube_title"
         android:textColorHint="@android:color/darker_gray"/>
 
@@ -31,6 +32,31 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="30dp"
         android:layout_marginTop="30dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:text="@string/stream_to_youtube"/>
+
+        <Switch
+            android:id="@+id/switch_destination"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:text="@string/stream_to_facebook"/>
+
+    </LinearLayout>
 
 
 </LinearLayout>

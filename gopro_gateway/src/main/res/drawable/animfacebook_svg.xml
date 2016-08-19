@@ -1,0 +1,7 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/facebook_svg">
+    <target
+        android:name="facebook"
+        android:animation="@anim/color_facebook"/>
+</animated-vector>
