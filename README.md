@@ -10,8 +10,8 @@ Fork and PR!
 ## DEVICES
 #### ANDROID:
 - Works only on ARMv7/ARMv8a devices
-- Works on Nexus 6
-- If your device isn't supported, read this doc about compiling ffmpeg binaries yourself!
+- Tested on Nexus 6
+- If your device isn't supported, read [this](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary/BUILD_GUIDE) doc about compiling ffmpeg binaries yourself!
 
 #### ACTION CAMS:
 - GoPro Hero 4 Silver (Tested)
