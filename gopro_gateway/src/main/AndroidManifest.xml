@@ -47,6 +47,8 @@
         <service
             android:name=".FFmpegUpload.FFmpegUploadToYouTube"
             android:process=":upload"/>
+
+        <receiver android:name=".Fragment.DeviceFragment$ProgressReceiver"/>
     </application>
 
 </manifest>

@@ -1,21 +1,16 @@
 <resources>
     <string name="app_name">GoPro Gateway</string>
-    <string name="pref_youtube_title">Enter your YouTube API</string>
 
     <string name="action_settings">Settings</string>
     <string name="stream_to_youtube">YouTube</string>
+    <string name="hint_youtube_api">Enter your YouTube API</string>
     <string name="stream_to_facebook">Facebook</string>
+    <string name="button_save">Save</string>
 
+    <string name="text_setup">Set your device to WiFi mode and then connect to it.</string>
     <string name="button_proceed">Proceed</string>
 
-    <string name="text_connect_to_gopro">Connect to a HERO 4/SJCAM 5000x device</string>
-    <string name="button_setup">Set your device to WiFi mode and then connect to it.</string>
-
-    <string name="text_permissions_req">To proceed, please grant all required permissions.</string>
-    <string name="button_req_perm">Grant permissions</string>
-
-    <string name="button_start_stream">Start stream</string>
-    <string name="button_start_upload">Start upload</string>
-    <string name="button_stop_stream">Stop stream</string>
-    <string name="button_stop_upload">Stop upload</string>
+    <string name="broadcast_key">com.biryanistudio.goprogateway.UPDATE</string>
+    <string name="broadcast_setting_up">Setting things up...</string>
+    <string name="broadcast_beginning_upload">Starting live stream...</string>
 </resources>

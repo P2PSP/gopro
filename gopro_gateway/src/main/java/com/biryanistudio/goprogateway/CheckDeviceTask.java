@@ -15,7 +15,6 @@ import java.net.URLConnection;
  */
 
 public class CheckDeviceTask extends AsyncTask<Void, Void, Boolean> {
-    private final String TAG = getClass().getSimpleName();
     private final String GOPRO_STREAM_URL = "http://10.5.5.9/gp/gpControl/status";
     private final WiFiFragment mWiFiFragment;
 
