@@ -33,11 +33,9 @@ import com.biryanistudio.goprogateway.R;
  */
 public class WiFiFragment extends Fragment implements IWifiAvailable, View.OnClickListener {
     private final String TAG = getClass().getSimpleName();
-
     private Button mButtonProceed;
     private boolean mLocationPerm = false;
     private CheckDeviceTask mCheckDeviceTask;
-
     private ConnectivityManager mConnectivityManager;
     private ConnectivityManager.NetworkCallback mNetworkCallback;
 

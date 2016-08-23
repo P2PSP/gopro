@@ -5,15 +5,15 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
-import android.widget.Toast;
 
 import com.biryanistudio.goprogateway.R;
+import com.biryanistudio.goprogateway.Utility;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -25,39 +25,38 @@ import com.facebook.login.widget.LoginButton;
 public class SettingsActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
     private final String TAG = getClass().getSimpleName();
     private CallbackManager callbackManager;
+    private String mUploadDestination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(this);
         callbackManager = CallbackManager.Factory.create();
+        setContentView();
+        setSwitch();
+        setYouTubeLogin();
+        setFacebookLogin();
+    }
+
+    private void setContentView() {
         setContentView(R.layout.activity_settings);
-        EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
-        editText.addTextChangedListener(new TextWatcher() {
+        showYouTubeLogin(true);
+        showFacebookLogin(false);
+        Button saveButton = (Button) findViewById(R.id.button_save);
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                saveYouTubeApi();
+            public void onClick(View view) {
+                if (mUploadDestination.equals("YouTube")) saveYouTubeApiKey();
+                else checkFacebookLogin();
             }
         });
-        setSwitch();
-        setFacebookLogin();
     }
 
     private void setSwitch() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String destination = sharedPreferences.getString("DESTINATION", "");
-        if (destination.equals("YouTube")) {
+        mUploadDestination = sharedPreferences.getString("DESTINATION", "");
+        if (mUploadDestination.equals("YouTube")) {
             fillEditText();
-        } else if (destination.equals("Facebook")) {
-            ((Switch) findViewById(R.id.switch_destination)).setChecked(true);
         }
         ((Switch) findViewById(R.id.switch_destination)).setOnCheckedChangeListener(this);
     }
@@ -65,10 +64,20 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
         if (!checked) {
-            saveYouTubeApi();
+            showYouTubeLogin(true);
+            showFacebookLogin(false);
+            mUploadDestination = "YouTube";
         } else {
-            checkFacebook();
+            showYouTubeLogin(false);
+            showFacebookLogin(true);
+            mUploadDestination = "Facebook";
         }
+    }
+
+    private void setYouTubeLogin() {
+        EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
+        editText.setCompoundDrawablesWithIntrinsicBounds(getDrawable(R.drawable.youtube_banner),
+                null, null, null);
     }
 
     private void setFacebookLogin() {
@@ -99,6 +108,28 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
+    private void showYouTubeLogin(boolean show) {
+        EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
+        if (show) {
+            editText.animate().alpha(1.0f).start();
+            editText.setEnabled(true);
+        } else {
+            editText.animate().alpha(0.0f).start();
+            editText.setEnabled(false);
+        }
+    }
+
+    private void showFacebookLogin(boolean show) {
+        LoginButton loginButton = (LoginButton) findViewById(R.id.login_button);
+        if (show) {
+            loginButton.animate().alpha(1.0f).start();
+            loginButton.setEnabled(true);
+        } else {
+            loginButton.animate().alpha(0.0f).start();
+            loginButton.setEnabled(false);
+        }
+    }
+
     private void fillEditText() {
         EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -106,7 +137,7 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
         editText.setText(api);
     }
 
-    private void saveYouTubeApi() {
+    private void saveYouTubeApiKey() {
         SharedPreferences.Editor sharedPrefsEditor = PreferenceManager
                 .getDefaultSharedPreferences(this).edit();
         EditText editText = (EditText) findViewById(R.id.edit_text_youtube_api);
@@ -115,23 +146,24 @@ public class SettingsActivity extends AppCompatActivity implements CompoundButto
             if (api.length() == 19) {
                 sharedPrefsEditor.putString("DESTINATION", "YouTube").apply();
                 sharedPrefsEditor.putString("YOUTUBE_API", api).apply();
-                return;
+                finish();
             }
         }
         sharedPrefsEditor.putString("DESTINATION", "").apply();
-        Toast.makeText(this, "To livestream to YouTube, " +
-                "please enter a valid YouTube API key.", Toast.LENGTH_SHORT).show();
+        Utility.showSnackbar(findViewById(android.R.id.content),
+                "To livestream to YouTube, please enter a valid YouTube API key.");
     }
 
-    private void checkFacebook() {
+    private void checkFacebookLogin() {
         SharedPreferences.Editor sharedPrefsEditor = PreferenceManager
                 .getDefaultSharedPreferences(this).edit();
         if (AccessToken.getCurrentAccessToken() == null) {
             sharedPrefsEditor.putString("DESTINATION", "").apply();
-            Toast.makeText(this, "To livestream to Facebook, " +
-                    "please login via the Settings screen", Toast.LENGTH_SHORT).show();
+            Utility.showSnackbar(findViewById(android.R.id.content),
+                    "To livestream to Facebook, please login via the Settings screen");
         } else {
             sharedPrefsEditor.putString("DESTINATION", "Facebook").apply();
+            finish();
         }
     }
 }

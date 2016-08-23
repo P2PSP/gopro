@@ -1,7 +1,7 @@
 
 # GoPro Gateway | P2PSP
 
-- [Here](https://github.com/sravan953/gopro/blob/master/doc/GSOC_DOC.md) is my GSoC documentation on what has been done/what has to be done.
+- [Here](https://github.com/sravan953/gopro/blob/master/Docs/GSOC_DOC.md) is my GSoC documentation on what has been done/what has to be done.
 - [Library](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary) used is derived from [Ffmpeg-android-java](https://github.com/WritingMinds/ffmpeg-android-java) , authored by [hiteshsondhi88](https://github.com/hiteshsondhi88).  
 
 ## CONTRIBUTING
@@ -10,8 +10,8 @@ Fork and PR!
 ## DEVICES
 #### ANDROID:
 - Works only on ARMv7/ARMv8a devices
-- Works on Nexus 6
-- If your device isn't supported, read this doc about compiling ffmpeg binaries yourself!
+- Tested on Nexus 6
+- If your device isn't supported, read [this](https://github.com/sravan953/gopro/tree/master/FFmpegLibrary/BUILD_GUIDE) doc about compiling ffmpeg binaries yourself!
 
 #### ACTION CAMS:
 - GoPro Hero 4 Silver (Tested)

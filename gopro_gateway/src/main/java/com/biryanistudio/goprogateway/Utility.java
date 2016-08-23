@@ -1,7 +1,13 @@
 package com.biryanistudio.goprogateway;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Environment;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.View;
+
+import com.biryanistudio.goprogateway.Fragment.DeviceFragment;
 
 import java.io.File;
 
@@ -39,5 +45,15 @@ public class Utility {
             Log.i(TAG, "Deleting video file.");
             file.delete();
         }
+    }
+
+    public static void showSnackbar(View view, String msg) {
+        Snackbar.make(view, msg, Snackbar.LENGTH_SHORT).show();
+    }
+
+    public static void sendBroadcast(Context context, String msg) {
+        Intent intent = new Intent(context, DeviceFragment.ProgressReceiver.class);
+        intent.putExtra(context.getString(R.string.broadcast_key), msg);
+        context.sendBroadcast(intent);
     }
 }

@@ -8,10 +8,8 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
-import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.security.NetworkSecurityPolicy;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -24,6 +22,7 @@ import com.biryanistudio.goprogateway.FFmpegUpload.FFmpegUploadToFacebook;
 import com.biryanistudio.goprogateway.FFmpegUpload.FFmpegUploadToYouTube;
 import com.biryanistudio.goprogateway.Interface.IWifiAvailable;
 import com.biryanistudio.goprogateway.NetworkCallback.WifiNetworkCallback;
+import com.biryanistudio.goprogateway.R;
 import com.biryanistudio.goprogateway.Utility;
 
 import java.util.Timer;
@@ -36,6 +35,7 @@ public abstract class AbstractFFmpegStream extends Service implements IWifiAvail
     protected FFmpeg mFFmpeg;
     protected Timer mTimer;
     protected ConnectivityManager mConnectivityManager;
+
     private ConnectivityManager.NetworkCallback mNetworkCallback;
     private Intent mStartUploadIntent;
 
@@ -48,9 +48,9 @@ public abstract class AbstractFFmpegStream extends Service implements IWifiAvail
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             NetworkSecurityPolicy.getInstance().isCleartextTrafficPermitted();
-        }
+        }*/
         showNotification();
         bindProcessToWiFi();
         return START_NOT_STICKY;
@@ -140,6 +140,8 @@ public abstract class AbstractFFmpegStream extends Service implements IWifiAvail
                     if (message.contains("Press [q]")) {
                         Log.i(TAG, "FFmpeg execute onUploadReady");
                         beginUpload();
+                        Utility.sendBroadcast(AbstractFFmpegStream.this,
+                                getString(R.string.broadcast_setting_up));
                     }
                 }
 

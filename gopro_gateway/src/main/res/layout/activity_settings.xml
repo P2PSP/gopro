@@ -12,17 +12,12 @@
               android:paddingTop="@dimen/activity_vertical_margin"
               tools:context=".Activity.MainActivity">
 
-    <ImageView
-        android:layout_width="125dp"
-        android:layout_height="125dp"
-        android:src="@drawable/youtube_banner"/>
-
     <EditText
         android:id="@+id/edit_text_youtube_api"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:hint="@string/hint_youtube_api"
         android:inputType="textPassword"
-        android:hint="@string/pref_youtube_title"
         android:textColorHint="@android:color/darker_gray"/>
 
     <com.facebook.login.widget.LoginButton
@@ -30,8 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="30dp"
-        android:layout_marginTop="30dp"/>
+        android:layout_marginBottom="30dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -57,6 +51,14 @@
             android:text="@string/stream_to_facebook"/>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/button_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@android:color/transparent"
+        android:text="@string/button_save"/>
 
 
 </LinearLayout>

@@ -18,6 +18,8 @@ import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
 import com.biryanistudio.goprogateway.Interface.ICellularAvailable;
 import com.biryanistudio.goprogateway.NetworkCallback.CellularNetworkCallback;
+import com.biryanistudio.goprogateway.R;
+import com.biryanistudio.goprogateway.Utility;
 
 /**
  * Created by Sravan on 10-Jul-16.
@@ -121,6 +123,8 @@ public abstract class AbstractFFmpegUpload extends Service implements ICellularA
                     Log.i(TAG, message);
                     if (message.contains("Press [q]")) {
                         Log.i(TAG, "FFmpeg execute uploading...");
+                        Utility.sendBroadcast(AbstractFFmpegUpload.this,
+                                getString(R.string.broadcast_beginning_upload));
                     }
                 }
 
