@@ -24,7 +24,7 @@ Fork and PR!
 ## RUNNING THE APP
 1. Enable WiFi and high speed cellular on your Android device.
 2. Pair your Android device to your GoPro.
-3. Open the app. Configure your [YouTube](https://github.com/sravan953/gopro/blob/master/doc/YouTube-Streaming.md)/[Facebook](https://github.com/sravan953/gopro/blob/master/doc/Facebook-Streaming.md) streaming options in the Settings screen.
+3. Open the app. Configure your [YouTube](https://github.com/sravan953/gopro/blob/master/Docs/YouTube-Streaming.md)/[Facebook](https://github.com/sravan953/gopro/blob/master/Docs/Facebook-Streaming.md) streaming options in the Settings screen.
 4. Upload!
 
 ## COMPILING ON ANDROID STUDIO
