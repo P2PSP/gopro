@@ -81,7 +81,7 @@ public abstract class AbstractFFmpegUpload extends Service implements ICellularA
      * folder.
      */
     protected void loadFFMPEG() {
-        mFFmpeg = FFmpeg.getInstance(this);
+        mFFmpeg = FFmpeg.getInstance(AbstractFFmpegUpload.this);
         try {
             mFFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                 @Override

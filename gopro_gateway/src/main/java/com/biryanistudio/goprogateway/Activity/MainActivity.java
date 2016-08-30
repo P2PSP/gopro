@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 
 import com.biryanistudio.goprogateway.Fragment.WiFiFragment;
 import com.biryanistudio.goprogateway.R;
@@ -17,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
         getFragmentManager().beginTransaction().replace(R.id.container, new WiFiFragment(), null)
                 .commit();

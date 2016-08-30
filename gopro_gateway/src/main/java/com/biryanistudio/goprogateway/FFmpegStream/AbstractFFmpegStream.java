@@ -18,6 +18,7 @@ import com.biryanistudio.FFmpegLibrary.Exception.FFmpegNotSupportedException;
 import com.biryanistudio.FFmpegLibrary.FFmpeg;
 import com.biryanistudio.FFmpegLibrary.Interface.ExecuteResponseHandler;
 import com.biryanistudio.FFmpegLibrary.Interface.LoadBinaryResponseHandler;
+import com.biryanistudio.goprogateway.FFmpegUpload.AbstractFFmpegUpload;
 import com.biryanistudio.goprogateway.FFmpegUpload.FFmpegUploadToFacebook;
 import com.biryanistudio.goprogateway.FFmpegUpload.FFmpegUploadToYouTube;
 import com.biryanistudio.goprogateway.Interface.IWifiAvailable;
@@ -97,7 +98,7 @@ public abstract class AbstractFFmpegStream extends Service implements IWifiAvail
      * folder.
      */
     protected void loadFFMPEG() {
-        mFFmpeg = FFmpeg.getInstance(this);
+        mFFmpeg = FFmpeg.getInstance(AbstractFFmpegStream.this);
         try {
             mFFmpeg.loadBinary(new LoadBinaryResponseHandler() {
                 @Override
