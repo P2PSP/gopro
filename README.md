@@ -5,4 +5,4 @@
 
 Read [wiki](https://github.com/sravan953/gopro/wiki).
 
-[This project has been supported by Google Summer of Code 2016]((https://summerofcode.withgoogle.com/archive/2016/projects/5614166500966400/).
+[This project has been supported by Google Summer of Code 2016](https://summerofcode.withgoogle.com/archive/2016/projects/5614166500966400/).
